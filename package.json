@@ -1,15 +1,16 @@
 {
   "name": "supra-writer",
-  "version": "0.3.0",
+  "version": "0.4.0-alpha.1",
   "private": true,
-  "description": "SUPRA Writer for Windows: native file dialogs, offline word processor, DOCX/HTML/TXT and printing",
+  "description": "SUPRA Writer Windows alpha: native file dialogs, offline editor, simplified style controls and unified icons",
   "license": "MIT",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "test:syntax": "node --check app.js && node --check pwa.js && node --check sw.js",
     "start:windows": "electron .",
     "build:win": "electron-builder --win nsis portable --x64 --publish never",
-    "test:desktop": "node --test tests/desktop.test.mjs"
+    "test:desktop": "node --test tests/desktop.test.mjs",
+    "test:icons": "node --test tests/branding.test.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.1",
@@ -21,7 +22,7 @@
   "build": {
     "appId": "org.flandersdb.supra.writer",
     "productName": "SUPRA Writer",
-    "copyright": "Copyright \u00a9 2026 flandersdb-oss",
+    "copyright": "Copyright © 2026 flandersdb-oss",
     "asar": true,
     "directories": {
       "output": "release"

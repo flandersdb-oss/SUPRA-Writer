@@ -70,7 +70,7 @@ async function createWindow() {
   window = new BrowserWindow({
     width:1400,height:920,minWidth:800,minHeight:620, backgroundColor:'#172638',
     icon:path.join(ROOT,'icons','icon-512.png'),
-    title:'SUPRA Writer — Windows',
+    title:'SUPRA Writer — Windows Alpha',
     webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}
   });
   const wc = window.webContents;

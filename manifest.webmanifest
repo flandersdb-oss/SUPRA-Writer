@@ -1,6 +1,6 @@
 {
   "id": "./",
-  "name": "SUPRA Writer \u2014 Free Open Source Word Processor",
+  "name": "SUPRA Writer — Free Open Source Word Processor",
   "short_name": "SUPRA Writer",
   "description": "Create documents easily. Free, private, offline-ready.",
   "start_url": "./",
@@ -14,19 +14,19 @@
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

@@ -23,3 +23,8 @@
 ## Web distribution update (October 28, 2026)
 - Added a visible offline app download link, web manifest, service worker and install instructions.
 - Added automated browser tests, issue templates, contributor and security guidance, and release automation.
+
+## v0.4.0-alpha.1 — Cross-platform visual identity
+- Unified brand icons for Windows and browser/PWA with Android-maskable variant.
+- New branded title bar logo and alpha build verification tests.
+- Alpha packaging pipeline for setup and portable builds.
