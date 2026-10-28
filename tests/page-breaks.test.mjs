@@ -8,7 +8,7 @@ import {chromium} from 'playwright';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 function startServer(){
  const server=http.createServer(async(req,res)=>{
-  const name=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\\/+/, '')||'index.html';
+  const name=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^[/]+/, '')||'index.html';
   const target=path.resolve(root,name);if(!target.startsWith(root+path.sep)){res.writeHead(403).end();return;}
   try{const body=await fs.readFile(target);const ext=path.extname(target);res.writeHead(200,{'content-type':ext==='.js'?'text/javascript':ext==='.css'?'text/css':ext==='.png'?'image/png':'text/html'});res.end(body);}
   catch{res.writeHead(404).end();}
