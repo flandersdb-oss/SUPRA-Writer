@@ -21,6 +21,13 @@ Open `index.html` in Chrome/Edge (with `styles.css` and `app.js` in the same fol
 - **Font size** 8–144 px via numeric entry and a convenient 8–72 px slider.
 - **DOCX export** now encodes base font, size, color, bold default (where applicable), letter spacing, line spacing, after-paragraph spacing, first-line indent, alignment, heading color, and margin. Some settings, especially word spacing, colored page background, and custom font-file embedding, are not preserved in DOCX.
 
+## Use it online or download it
+
+- **Online editor:** [SUPRA Writer GitHub Pages](https://flandersdb-oss.github.io/SUPRA-Writer/). No account is required to write.
+- **Download the offline editor:** Select **⇩ Get app** on the website to download the self-contained HTML app. Open the downloaded file in Chrome/Edge; it works offline after download.
+- **Download your documents:** Select **Save file** to export your writing as DOCX, HTML, or TXT; select **Print / PDF** to save a PDF through your browser.
+- The website is static GitHub Pages hosting, not a server-side cloud document store. Export backup files regularly, and avoid assuming your work will sync between devices.
+
 ## How to use
 
 1. Open the app and type on the document page.
