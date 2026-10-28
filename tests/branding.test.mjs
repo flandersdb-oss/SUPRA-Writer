@@ -27,5 +27,15 @@ test('website header uses same icon identity',()=>{
  const html=read('index.html').toString();
  assert.match(html,/class="brand-icon"/);
  assert.match(html,/src="icons\/icon-192.png"/);
- assert.match(read('sw.js').toString(),/shell-v0\.4-alpha\.1/);
+ const cacheSource=read('sw.js').toString();
+ const version=pkg.version.match(/^(\d+\.\d+)\.\d+-(alpha\.\d+)$/);
+ assert.ok(version,'Staged alpha uses semantic prerelease version');
+ const expectedPrefix='supra-writer-shell-v'+version[1]+'-'+version[2];
+ const cacheMatch=cacheSource.match(/const CACHE = '([^']+)'/);
+ assert.ok(cacheMatch,'Offline cache name exists');
+ assert.ok(cacheMatch[1]===expectedPrefix || cacheMatch[1].startsWith(expectedPrefix+'-'),
+   'Offline cache version matches the application release: '+pkg.version);
+ for (const file of ['index.html','app.js','styles.css','pwa.js','quick-actions.js']) {
+   assert.ok(cacheSource.includes("'./"+file+"'"),'Offline shell caches '+file);
+ }
 });
