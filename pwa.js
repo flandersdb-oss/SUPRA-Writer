@@ -1,6 +1,11 @@
 /* SUPRA Writer install and offline entrypoint (MIT) */
 (() => {
   'use strict';
+  // Both browser and Windows Electron renderers load this shared, offline-only feature.
+  const quickActionsScript=document.createElement('script');
+  quickActionsScript.src='./quick-actions.js';
+  quickActionsScript.async=false;
+  document.head.appendChild(quickActionsScript);
   if (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {scope:'./'}).catch(error => console.warn('Optional offline installation unavailable:',error)));

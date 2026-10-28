@@ -1,6 +1,6 @@
 /* SUPRA Writer offline shell; never caches user documents or uploads. MIT. */
-const CACHE = 'supra-writer-shell-v0.4-alpha.1';
-const SHELL = ['./', './index.html', './styles.css', './app.js', './pwa.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './dist/SUPRA_Writer_v0.2_Standalone.html'];
+const CACHE = 'supra-writer-shell-v0.4-alpha.1-quick-actions';
+const SHELL = ['./', './index.html', './styles.css', './app.js', './pwa.js', './quick-actions.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './dist/SUPRA_Writer_v0.2_Standalone.html'];
 const urls = SHELL.map(path => new URL(path, self.registration.scope).href);
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(urls)).then(() => self.skipWaiting()));

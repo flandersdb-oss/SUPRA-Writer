@@ -37,6 +37,10 @@ Double-click `SUPRA_Writer_v0.2_Standalone.html` (in the parent download folder)
 - **Export your work:** **Save file** offers DOCX, HTML, and TXT; **Print / PDF** uses the browser print dialog.
 - **Important:** unsaved documents may exist only in that browser on that device. Export frequently; no automatic cloud sync or backup is provided.
 
+## One-click Quick Actions (experimental alpha)
+
+Use **⚡ Quick Actions** or press **Ctrl+K** in the editor. Type a result such as *professional letter*, *academic paper*, *comfortable reading*, *print*, or *find and replace*. The panel is entirely local and works offline. Four of the common document makeovers are also visible in the Quick looks panel. Settings are applied via the same UI controls as manual editing; Undo look restores the previous appearance. This is not an AI service and does not silently change document text.
+
 ## How to use
 
 1. Open the app and type on the document page.
