@@ -14,6 +14,7 @@ const actions=[
  {id:'find',glyph:'⌕',title:'Find words',detail:'Search in the current document',syn:'search text',run:()=>$('showFind').click()},
  {id:'replace',glyph:'⇄',title:'Find and replace',detail:'Open text replacement; changes require your confirmation',syn:'replace all substitute edit words',run:()=>{const bar=$('findBar');bar.hidden=false;$('replaceText').parentElement.hidden=false;$('replaceNext').hidden=false;$('replaceAll').hidden=false;$('findText').focus();}},
  {id:'font',glyph:'Aa',title:'Choose a font',detail:'Go directly to letter shapes and size',syn:'typeface typography text',run:()=>jump('text','fontSearch')},
+ {id:'new-page',glyph:'▯',title:'Start a new page',detail:'Insert a real page break that stays in Word documents',syn:'pagebreak ctrl enter next sheet separate page',run:()=>$('addPageBreak').click()},
  {id:'page',glyph:'▯',title:'Adjust page margins',detail:'Open paper size, direction and margins',syn:'layout orientation landscape portrait',run:()=>jump('page','paperSize')},
  {id:'advanced',glyph:'⚙',title:'Advanced formatting',detail:'Open the detailed appearance controls',syn:'settings spacing colors indent',run:()=>jump('advanced','advancedPreset')},
  {id:'word',glyph:'↓',title:'Save Word document',detail:'Export DOCX using the normal Save dialog',syn:'export file docx',run:()=>{$('saveMenuBtn').click();$('[data-export="docx"]').click();}},

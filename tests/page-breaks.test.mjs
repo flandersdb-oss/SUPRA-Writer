@@ -22,6 +22,7 @@ test('manual page breaks survive DOCX export/import and browser draft storage',{
  await page.locator('#document').fill('Before the page break');
  await page.locator('#document').click();await page.keyboard.press('Control+End');await page.keyboard.press('Control+Enter');
  assert.equal(await page.locator('#document [data-supra-page-break="true"]').count(),1);
+ assert.ok((await page.evaluate(()=>SUPRAQuickActions.ids())).includes('new-page'));
  await page.keyboard.type('After the page break');
  const pending=page.waitForEvent('download');await page.locator('#saveMenuBtn').click();await page.locator('[data-export="docx"]').click();
  const download=await pending;const temp=await download.path();const bytes=await fs.readFile(temp);assert.ok(bytes.length>1000);
