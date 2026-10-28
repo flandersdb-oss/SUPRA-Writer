@@ -8,6 +8,7 @@
     <div class="top-actions">
       <button class="top-btn" id="newBtn" title="Start a new document">✧ <span>New</span></button>
       <button class="top-btn" id="openBtn" title="Open DOCX, HTML, or text from your computer">↥ <span>Open</span></button>
+      <button class="top-btn" type="button" id="showFind" title="Find or replace text (Ctrl+F)">⌕ <span>Find</span></button>
       <div class="dropdown-wrap"><button class="top-btn top-primary" id="saveMenuBtn" aria-expanded="false">↓ <span>Save file</span> ▾</button>
         <div class="dropdown-menu" id="saveMenu" hidden>
          <button data-export="docx"><b>Word file (.docx)</b><small>Opens in Word and LibreOffice</small></button>
@@ -21,6 +22,15 @@
       <button class="top-btn help-icon" id="helpBtn" title="Help and keyboard shortcuts" aria-label="Help">?</button>
     </div>
   </header>
+  <div class="find-bar" id="findBar" role="search" aria-label="Find and replace" hidden>
+    <label>Find <input id="findText" type="search" placeholder="Word or phrase" aria-label="Text to find" spellcheck="false"></label>
+    <label>Replace with <input id="replaceText" type="text" placeholder="New text" aria-label="Replacement text" spellcheck="false"></label>
+    <button type="button" id="findNext">Find next</button>
+    <button type="button" id="replaceNext">Replace</button>
+    <button type="button" id="replaceAll">Replace all</button>
+    <span class="find-feedback" id="findStatus" role="status" aria-live="polite"></span>
+    <button type="button" id="closeFind" aria-label="Close find and replace">×</button>
+  </div>
   <div class="toolbar" aria-label="Writing toolbar">
     <div class="tools-group"><label class="small-label" for="blockStyle">Text style</label><select id="blockStyle" title="Change paragraph style"><option value="p">Body text</option><option value="h1">Big heading</option><option value="h2">Small heading</option><option value="blockquote">Quote</option></select></div>
     <div class="tools-group"><button class="tool-btn" data-cmd="bold" aria-label="Bold" title="Make selected text bold (Ctrl+B)"><b>B</b></button><button class="tool-btn" data-cmd="italic" aria-label="Italic" title="Make selected text italic (Ctrl+I)"><i>I</i></button><button class="tool-btn" data-cmd="underline" aria-label="Underline" title="Underline selected text (Ctrl+U)"><u>U</u></button><button class="tool-btn" data-cmd="strikeThrough" aria-label="Strike through" title="Cross out selected text"><s>S</s></button></div>

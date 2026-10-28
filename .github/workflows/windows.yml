@@ -1,0 +1,77 @@
+name: Windows app build
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'app.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'package.json'
+      - '.github/workflows/windows.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'app.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'package.json'
+      - '.github/workflows/windows.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install packages
+        run: npm install --no-audit --no-fund
+      - name: Check source syntax
+        run: npm run test:syntax
+      - name: Test Windows-host boundary
+        run: npm run test:desktop
+      - name: Build Windows installer and portable executable
+        run: npm run build:win
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Upload Windows applications
+        uses: actions/upload-artifact@v4
+        with:
+          name: SUPRA-Writer-Windows-v0.3
+          path: |
+            release/*.exe
+          if-no-files-found: error
+          retention-days: 30
+
+  release-preview:
+    needs: windows
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: SUPRA-Writer-Windows-v0.3
+          path: windows-build
+      - name: Create the Windows preview release if not already present
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if gh release view v0.3.0 >/dev/null 2>&1; then
+            echo 'v0.3.0 already exists, preserving published release assets.'
+          else
+            gh release create v0.3.0 windows-build/*.exe \
+              --target "$GITHUB_SHA" \
+              --title 'SUPRA Writer v0.3.0 — Windows preview' \
+              --prerelease \
+              --notes-file docs/RELEASE_NOTES_v0.3.0.md
+          fi

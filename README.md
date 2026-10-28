@@ -1,6 +1,10 @@
-# SUPRA Writer v0.2 — Simple + Advanced word processing
+# SUPRA Writer v0.3 — Browser + Windows desktop (preview)
 
 An original **MIT-licensed**, offline-first word processor that aims to replace cryptic setting names with plain English, glyphs, live examples, and one-click document looks. It is a functioning browser application, **not** yet a complete Word/LibreOffice replacement.
+
+## Windows desktop edition (preview)
+
+See [Windows Desktop guide](docs/WINDOWS_DESKTOP.md). A GitHub Actions workflow builds a native Windows installer and portable `.exe` from source. Build success must be verified before distributing executables.
 
 ## Run in one step
 

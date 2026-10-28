@@ -1,14 +1,71 @@
 {
   "name": "supra-writer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Offline-capable open-source document editor with simplified formatting",
+  "description": "SUPRA Writer for Windows: native file dialogs, offline word processor, DOCX/HTML/TXT and printing",
   "license": "MIT",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "test:syntax": "node --check app.js && node --check pwa.js && node --check sw.js"
+    "test:syntax": "node --check app.js && node --check pwa.js && node --check sw.js",
+    "start:windows": "electron .",
+    "build:win": "electron-builder --win nsis portable --x64 --publish never",
+    "test:desktop": "node --test tests/desktop.test.mjs"
   },
   "devDependencies": {
-    "playwright": "1.56.1"
+    "playwright": "1.56.1",
+    "electron": "44.9.3",
+    "electron-builder": "26.18.0"
+  },
+  "main": "desktop/main.cjs",
+  "author": "flandersdb-oss",
+  "build": {
+    "appId": "org.flandersdb.supra.writer",
+    "productName": "SUPRA Writer",
+    "copyright": "Copyright \u00a9 2026 flandersdb-oss",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/**/*",
+      "index.html",
+      "app.js",
+      "pwa.js",
+      "styles.css",
+      "manifest.webmanifest",
+      "sw.js",
+      "icons/**/*",
+      "LICENSE",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "SUPRA-Writer-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SUPRA Writer"
+    },
+    "portable": {
+      "artifactName": "SUPRA-Writer-Portable-${version}-${arch}.${ext}"
+    }
   }
 }
