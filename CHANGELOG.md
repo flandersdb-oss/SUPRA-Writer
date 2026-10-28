@@ -1,3 +1,12 @@
+# SUPRA Writer — Changelog
+
+## v0.3.0 Windows Desktop preview
+
+- Electron Windows installer + portable build workflow (not a verified published release until CI builds).
+- Native Open, Save, Save As, Export PDF, Print and File/Edit menus.
+- Secure local file access through a sandboxed preload bridge.
+- Browser version preserved.
+
 # Changelog
 
 ## v0.2 — October 28, 2026

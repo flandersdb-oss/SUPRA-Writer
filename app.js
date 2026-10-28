@@ -120,11 +120,21 @@ function insertHtml(html){restoreSelection();document.execCommand('insertHTML',f
 function loadHtml(html,name){doc.innerHTML=sanitizeMarkup(html)||'<p></p>';$('docName').value=name||'Untitled';savedRange=null;store();}
 function textToHtml(text){return text.replace(/\r\n?/g,'\n').split(/\n\n+/).map(p=>'<p>'+escapeXml(p).replace(/\n/g,'<br>')+'</p>').join('');}
 function escapeXml(text){return String(text).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[ch]));}
-function download(bytes,fileName,mime){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fileName;a.style.display='none';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);}
+let forceDesktopSaveAs=false;
+async function download(bytes,fileName,mime){
+ const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type:mime});
+ if(window.SUPRADesktop){
+  const force=forceDesktopSaveAs;forceDesktopSaveAs=false;
+  try {const data=new Uint8Array(await blob.arrayBuffer());const result=await window.SUPRADesktop.saveDocument({fileName,bytes:data,saveAs:force});
+   if(result?.saved){status('Saved to '+result.fileName);toast('Saved: '+result.fileName);return;}if(result?.canceled){status('Save canceled');return;}
+  }catch(e){toast('Save failed: '+e.message);status('Save failed');}return;
+ }
+ const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fileName;a.style.display='none';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);
+}
 function filename(ext){const name=($('docName').value||'Untitled').trim().replace(/[\\/:*?"<>|]/g,'-').slice(0,90);return (name||'Untitled')+'.'+ext;}
 function exportHtml(){const serialized='<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>'+escapeXml($('docName').value)+'</title><style>body{background:#e9edf3;margin:0;padding:28px}article{box-sizing:border-box;margin:auto;max-width:850px;min-height:900px;background:'+settings.paper+';padding:'+getMargin()+'px;font-family:'+settings.font+';font-size:'+settings.fontSize+'px;line-height:'+settings.line+';letter-spacing:'+settings.letterSpacing+'px;word-spacing:'+settings.wordSpacing+'px;font-weight:'+settings.fontWeight+';text-align:'+settings.align+';color:'+settings.color+';overflow-wrap:anywhere}article p{text-indent:'+settings.firstIndent+'px;margin-bottom:'+settings.paragraphSpace+'em}article h1,article h2,article h3{color:'+settings.headingColor+'}table{border-collapse:collapse;width:100%}th,td{border:1px solid #aab8c8;padding:8px}blockquote{border-left:4px solid #98b2d3;padding-left:15px} @media print{body{padding:0;background:#fff}article{padding:0;max-width:none;min-height:0}@page{size:'+settings.size+' '+settings.orientation+';margin:'+(getMargin()/96)+'in}}</style></head><body><article>'+sanitizeMarkup(doc.innerHTML)+'</article></body></html>';
- download(serialized,filename('html'),'text/html;charset=utf-8');toast('HTML file saved');}
-function exportText(){download(doc.innerText,filename('txt'),'text/plain;charset=utf-8');toast('Text file saved');}
+ void download(serialized,filename('html'),'text/html;charset=utf-8');if(!window.SUPRADesktop)toast('HTML file saved');}
+function exportText(){void download(doc.innerText,filename('txt'),'text/plain;charset=utf-8');if(!window.SUPRADesktop)toast('Text file saved');}
 // ZIP writer: store-only ZIP archives, CRC32 and central directory. No third-party dependency.
 const enc=new TextEncoder(); const dec=new TextDecoder();
 const crcTable=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
@@ -172,7 +182,7 @@ function generateDocx(){const ctx={links:[],nextRel:1};const content=bodyXml(ctx
  const rootRels=front+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>';
  const core=front+'<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>'+xmlText($('docName').value)+'</dc:title><dc:creator>SUPRA Writer</dc:creator></cp:coreProperties>';
  return zipFiles({'[Content_Types].xml':contentTypes,'_rels/.rels':rootRels,'docProps/core.xml':core,'word/document.xml':document,'word/styles.xml':styles,'word/numbering.xml':numbering,'word/_rels/document.xml.rels':rels});}
-function exportDocx(){try{const file=generateDocx();download(file,filename('docx'),'application/vnd.openxmlformats-officedocument.wordprocessingml.document');toast('Word (.docx) saved to your downloads');}catch(err){toast('Could not save DOCX: '+err.message);}}
+function exportDocx(){try{const file=generateDocx();void download(file,filename('docx'),'application/vnd.openxmlformats-officedocument.wordprocessingml.document');if(!window.SUPRADesktop)toast('Word (.docx) saved to your downloads');}catch(err){toast('Could not save DOCX: '+err.message);}}
 const W='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 function tagChildren(el,name){return el?Array.from(el.childNodes).filter(n=>n.nodeType===1&&n.localName===name):[];}
 function firstChild(el,name){return tagChildren(el,name)[0]||null;}
@@ -199,8 +209,80 @@ async function importDocx(blob){const zip=await unzipFiles(blob);if(!zip['word/d
  if(mar){const v=Number(attr(mar,'left'))/15;settings.margin=v<60?'narrow':v>104?'wide':'normal';}
  updatePreview();store();toast('Word document opened · complex layouts may be simplified');}
 async function openFile(file){if(!file)return;const name=file.name.replace(/\.[^.]+$/,'');const ext=file.name.split('.').pop().toLowerCase();try{if(file.size>25*1024*1024)throw Error('Please use a file smaller than 25 MB');if(ext==='docx')await importDocx(file);else if(['html','htm'].includes(ext)){const raw=await file.text();const parser=new DOMParser().parseFromString(raw,'text/html');loadHtml(parser.body.innerHTML,name);toast('HTML document opened');}else if(ext==='txt'){loadHtml(textToHtml(await file.text()),name);toast('Text document opened');}else throw Error('Choose a .docx, .html, or .txt file');}catch(err){toast('Open failed: '+err.message);}}
+// Find and replace within individual text runs, preserving surrounding HTML formatting.
+function showFindBar(replace=false){
+ $('findBar').hidden=false;$('replaceText').parentElement.hidden=!replace;
+ $('replaceNext').hidden=!replace;$('replaceAll').hidden=!replace;
+ $('findText').focus();$('findText').select();
+}
+function findNextMatch(){
+ const query=$('findText').value;
+ if(!query){$('findStatus').textContent='Type the text to find';return null;}
+ const walker=document.createTreeWalker(doc,NodeFilter.SHOW_TEXT);const nodes=[];
+ while(walker.nextNode())nodes.push(walker.currentNode);
+ if(!nodes.length)return null;
+ const selection=window.getSelection();let startNode=0,startOffset=0;
+ if(selection&&selection.rangeCount){const range=selection.getRangeAt(0);const nodeIndex=nodes.indexOf(range.endContainer);if(nodeIndex>=0){startNode=nodeIndex;startOffset=range.endOffset;}}
+ const needle=query.toLocaleLowerCase();
+ for(let cycle=0;cycle<2;cycle++){
+  for(let i=(cycle?0:startNode);i<nodes.length;i++){
+   const node=nodes[i];const at=node.nodeValue.toLocaleLowerCase().indexOf(needle,cycle?0:(i===startNode?startOffset:0));
+   if(at<0)continue;
+   const range=document.createRange();range.setStart(node,at);range.setEnd(node,at+query.length);
+   selection.removeAllRanges();selection.addRange(range);
+   node.parentElement?.scrollIntoView({block:'nearest'});
+   $('findStatus').textContent='Found match';return range;
+  }
+ }
+ $('findStatus').textContent='No match found';return null;
+}
+function replaceSelected(){
+ const query=$('findText').value,replacement=$('replaceText').value;
+ if(!query)return;
+ let range=null;const selection=window.getSelection();
+ if(selection?.rangeCount && selection.toString().toLocaleLowerCase()===query.toLocaleLowerCase() && doc.contains(selection.anchorNode))range=selection.getRangeAt(0);
+ if(!range)range=findNextMatch();if(!range)return;
+ range.deleteContents();const node=document.createTextNode(replacement);range.insertNode(node);
+ const after=document.createRange();after.setStartAfter(node);after.collapse(true);selection.removeAllRanges();selection.addRange(after);
+ queueSave();$('findStatus').textContent='Replaced one match';
+}
+function replaceEveryMatch(){
+ const query=$('findText').value;const replacement=$('replaceText').value;
+ if(!query){$('findStatus').textContent='Enter text to find';return;}
+ if(query.length>300)return;
+ const walker=document.createTreeWalker(doc,NodeFilter.SHOW_TEXT);const nodes=[];
+ while(walker.nextNode())nodes.push(walker.currentNode);
+ let count=0;for(const node of nodes){
+  const source=node.nodeValue;const lower=source.toLocaleLowerCase(),needle=query.toLocaleLowerCase();let index=0,start=0,result='';
+  while((index=lower.indexOf(needle,start))>=0){result+=source.slice(start,index)+replacement;start=index+query.length;count++;if(count>=10000)break;}
+  if(start>0)node.nodeValue=result+source.slice(start);
+  if(count>=10000)break;
+ }
+ queueSave();$('findStatus').textContent=count+' replacement'+(count===1?'':'s')+' made';
+}
+function wireFind(){
+ $('showFind').addEventListener('click',()=>showFindBar(false));
+ $('findNext').addEventListener('click',findNextMatch);
+ $('replaceNext').addEventListener('click',replaceSelected);
+ $('replaceAll').addEventListener('click',replaceEveryMatch);
+ $('closeFind').addEventListener('click',()=>{$('findBar').hidden=true;doc.focus();});
+ $('findText').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();findNextMatch();}});
+}
+async function openFromWindows(){try{const item=await window.SUPRADesktop.openDocument();if(item)await openFile(new File([new Uint8Array(item.bytes)],item.name));}catch(e){toast('Open failed: '+e.message);}}
+function wireWindowsHost(){
+ if(!window.SUPRADesktop)return;
+ document.documentElement.classList.add('supra-desktop');
+ const sub=document.querySelector('.brand small');if(sub)sub.textContent='Windows Desktop · v0.3';
+ window.SUPRADesktop.onCommand(command=>{
+  if(command==='new')beginNew();else if(command==='open')void openFromWindows();
+  else if(command==='save')exportDocx();else if(command==='saveAs'){forceDesktopSaveAs=true;exportDocx();}
+  else if(command==='pdf')void window.SUPRADesktop.exportPdf().then(r=>{if(r.saved)toast('PDF saved: '+r.fileName);}).catch(e=>toast('PDF export failed: '+e.message));
+  else if(command==='print')printDocument();else if(command==='find')showFindBar(false);else if(command==='replace')showFindBar(true);else if(command==='help')$('modal').hidden=false;
+ });
+ window.SUPRADesktop.onFileOpen(item=>{void openFile(new File([new Uint8Array(item.bytes)],item.name));});
+}
 function printDocument(){const old=document.title;document.title=$('docName').value||'SUPRA Writer';window.print();setTimeout(()=>document.title=old,1000);}
-function beginNew(){if(doc.innerText.trim()&&!confirm('Start a new document? Your current browser copy will be replaced. Save a file first if you want to keep it.'))return;rememberLook();settings={...defaults};doc.innerHTML='<p><br></p>';$('docName').value='Untitled';savedRange=null;updatePreview();store();doc.focus();toast('New document ready');}
+function beginNew(){if(doc.innerText.trim()&&!confirm('Start a new document? Your current browser copy will be replaced. Save a file first if you want to keep it.'))return;rememberLook();settings={...defaults};doc.innerHTML='<p><br></p>';$('docName').value='Untitled';savedRange=null;updatePreview();store();doc.focus();toast('New document ready');if(window.SUPRADesktop)void window.SUPRADesktop.resetDocument();}
 function addTable(){const rowInput=prompt('How many rows? (1–12)','3');if(rowInput===null)return;const rows=Math.max(1,Math.min(12,Number(rowInput)||3));const colInput=prompt('How many columns? (1–8)','3');if(colInput===null)return;const cols=Math.max(1,Math.min(8,Number(colInput)||3));let h='<table><tbody>';for(let i=0;i<rows;i++){h+='<tr>';for(let j=0;j<cols;j++)h+='<td> </td>';h+='</tr>';}h+='</tbody></table><p><br></p>';insertHtml(h);toast(rows+' × '+cols+' table added');}
 function addLink(){let selected=window.getSelection()?.toString()||'';const raw=prompt('Where should this link go? Enter a website address starting with https://','https://');if(raw===null)return;const url=safeUrl(raw);if(!url){toast('Use a valid http://, https:// or mailto: link');return;}restoreSelection();if(selected){command('createLink',url);}else insertHtml('<a href="'+escapeXml(url)+'">'+escapeXml(url)+'</a>');}
 function loadPrevious(){try{const raw=localStorage.getItem('supra-writer-v02')||localStorage.getItem('supra-writer-v01');if(!raw)return;const item=JSON.parse(raw);if(item.html)doc.innerHTML=sanitizeMarkup(item.html);if(item.name)$('docName').value=item.name;if(item.settings)settings={...defaults,...item.settings};status('Restored from this browser');}catch(err){status('Ready');}}
@@ -239,12 +321,12 @@ function wire(){
  $('saveMenuBtn').addEventListener('click',()=>{let open=$('saveMenu').hidden;$('saveMenu').hidden=!open;$('saveMenuBtn').setAttribute('aria-expanded',open?'true':'false');});
  document.querySelectorAll('[data-export]').forEach(b=>b.addEventListener('click',()=>{const type=b.dataset.export;$('saveMenu').hidden=true;$('saveMenuBtn').setAttribute('aria-expanded','false');if(type==='docx')exportDocx();if(type==='html')exportHtml();if(type==='txt')exportText();}));
  document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrap')){$('saveMenu').hidden=true;$('saveMenuBtn').setAttribute('aria-expanded','false');}});
- $('newBtn').addEventListener('click',beginNew);$('openBtn').addEventListener('click',()=>$('openFile').click());$('openFile').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';await openFile(file);});$('printBtn').addEventListener('click',printDocument);
+ $('newBtn').addEventListener('click',beginNew);$('openBtn').addEventListener('click',()=>{if(window.SUPRADesktop)void openFromWindows();else $('openFile').click();});$('openFile').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';await openFile(file);});$('printBtn').addEventListener('click',printDocument);
  $('helpBtn').addEventListener('click',()=>$('modal').hidden=false);$('closeModal').addEventListener('click',()=>$('modal').hidden=true);$('modal').addEventListener('click',e=>{if(e.target.id==='modal')$('modal').hidden=true;});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('modal').hidden=true;$('symbolsModal').hidden=true;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();exportDocx();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='p'){e.preventDefault();printDocument();}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('modal').hidden=true;$('symbolsModal').hidden=true;$('findBar').hidden=true;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'){e.preventDefault();showFindBar(false);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='h'){e.preventDefault();showFindBar(true);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(e.shiftKey)forceDesktopSaveAs=true;exportDocx();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='p'){e.preventDefault();printDocument();}});
  window.addEventListener('beforeunload',store);window.addEventListener('resize',updatePreview);
 }
-wire();loadSavedLooks();loadPrevious();updatePreview();updateCounts();
+wire();wireFind();wireWindowsHost();loadSavedLooks();loadPrevious();updatePreview();updateCounts();
 // Expose a small API solely for repeatable local QA checks.
 window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=>({...settings}),wordCount:()=>Number(($('wordCount').textContent||'').split(' ')[0]),readHtml:()=>doc.innerHTML, fontCount:()=>fontItems.length, symbols:()=>symbolSet.map(s=>s[0]), applyAdvanced:(id)=>applySettings(advancedPresets[id],id), importFont:loadFontFile, customLooks:()=>customLooks};
 })();
