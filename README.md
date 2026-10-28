@@ -12,6 +12,8 @@ See [Windows Desktop guide](docs/WINDOWS_DESKTOP.md). A GitHub Actions workflow 
 - [Design system](docs/BRAND_SYSTEM.md) — provisional cross-platform icon family.
 - [Alpha release notes](docs/RELEASE_NOTES_v0.4.0-alpha.1.md).
 
+> Current production preview remains v0.4.0-alpha.1. The next v0.5 page-break feature is in [staging PR #11](https://github.com/flandersdb-oss/SUPRA-Writer/pull/11) and is not yet a stable release.
+
 ## Run in one step
 
 Double-click `SUPRA_Writer_v0.2_Standalone.html` (in the parent download folder) or open `index.html` in Chrome/Edge. The standalone build embeds the application's HTML, CSS and JavaScript. No server, subscription, account, or Internet connection is required.
