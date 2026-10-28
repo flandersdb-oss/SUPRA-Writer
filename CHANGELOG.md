@@ -1,18 +1,16 @@
 # Changelog
 
-## v0.2 — 2026-10-28
+## v0.2 — October 28, 2026
+- Extended default font catalogue to 162 named families, searchable with six categories.
+- Added local TTF/OTF/WOFF file loading, installed-font scan when supported, and manual family entry.
+- Added 12 Advanced presets, fine controls, save/undo personal looks, and live contrast ratio.
+- Added Unicode irony mark button `⸮` and 30-character symbol palette.
+- Extended DOCX style export to additional character/paragraph properties.
+- Preserved v0.1 functionality and offline, MIT-licensed architecture.
 
-- Added searchable catalogue of 162 font-family names, font-file loading, and optional local-font enumeration.
-- Added 12 Advanced makeover presets alongside 5 Quick Looks.
-- Added letter/word/paragraph spacing, margin, indentation, alignment, heading color and contrast controls.
-- Added up to 25 user-defined looks saved locally.
-- Added Unicode irony mark `⸮` and a broader symbol palette.
-- Expanded DOCX formatting export and offline test coverage.
+## v0.1 — October 28, 2026
+- Initial usable offline editor, five simple quick looks, basic DOCX/HTML/TXT open and save, and print.
 
-## v0.1
-
-- First working offline browser-based Writer prototype with basic editing, styles, tables, and DOCX/HTML/TXT export.
-
-## Limitations
-
-- Exact multi-page layout, full DOCX fidelity, document images and native Android builds remain incomplete.
+## Web distribution update (October 28, 2026)
+- Added a visible offline app download link, web manifest, service worker and install instructions.
+- Added automated browser tests, issue templates, contributor and security guidance, and release automation.

@@ -1,0 +1,26 @@
+name: Browser and document tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependency
+        run: npm install --no-audit --no-fund
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify JS syntax
+        run: npm run test:syntax
+      - name: Run real-browser regression tests
+        run: npm test

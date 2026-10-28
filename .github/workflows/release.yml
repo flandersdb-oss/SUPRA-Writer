@@ -1,0 +1,28 @@
+name: Publish SUPRA Writer v0.2.0
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release.yml'
+      - 'docs/RELEASE_NOTES_v0.2.0.md'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create the versioned public release if missing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view v0.2.0 >/dev/null 2>&1; then
+            echo 'Release v0.2.0 already exists; no duplicate created.'
+          else
+            gh release create v0.2.0 dist/SUPRA_Writer_v0.2_Standalone.html \
+              --target "$GITHUB_SHA" \
+              --title 'SUPRA Writer v0.2.0' \
+              --notes-file docs/RELEASE_NOTES_v0.2.0.md
+          fi

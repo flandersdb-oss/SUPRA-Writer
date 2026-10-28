@@ -1,12 +1,10 @@
 # SUPRA Writer v0.2 — Simple + Advanced word processing
 
-> **Official repository:** [flandersdb-oss/SUPRA-Writer](https://github.com/flandersdb-oss/SUPRA-Writer). This is an early experimental editor, not yet a complete Word replacement. Never rely solely on browser local storage for important documents; export a file regularly.
-
 An original **MIT-licensed**, offline-first word processor that aims to replace cryptic setting names with plain English, glyphs, live examples, and one-click document looks. It is a functioning browser application, **not** yet a complete Word/LibreOffice replacement.
 
 ## Run in one step
 
-Open `index.html` in Chrome/Edge (with `styles.css` and `app.js` in the same folder), or download and open [`dist/SUPRA_Writer_v0.2_Standalone.html`](dist/SUPRA_Writer_v0.2_Standalone.html) as one self-contained file. The standalone build embeds the application's HTML, CSS and JavaScript. No server, subscription, account, or Internet connection is required.
+Double-click `SUPRA_Writer_v0.2_Standalone.html` (in the parent download folder) or open `index.html` in Chrome/Edge. The standalone build embeds the application's HTML, CSS and JavaScript. No server, subscription, account, or Internet connection is required.
 
 ## What's new in v0.2
 
@@ -21,12 +19,13 @@ Open `index.html` in Chrome/Edge (with `styles.css` and `app.js` in the same fol
 - **Font size** 8–144 px via numeric entry and a convenient 8–72 px slider.
 - **DOCX export** now encodes base font, size, color, bold default (where applicable), letter spacing, line spacing, after-paragraph spacing, first-line indent, alignment, heading color, and margin. Some settings, especially word spacing, colored page background, and custom font-file embedding, are not preserved in DOCX.
 
-## Use it online or download it
+## Online, offline and installation
 
-- **Online editor:** [SUPRA Writer GitHub Pages](https://flandersdb-oss.github.io/SUPRA-Writer/). No account is required to write.
-- **Download the offline editor:** Select **⇩ Get app** on the website to download the self-contained HTML app. Open the downloaded file in Chrome/Edge; it works offline after download.
-- **Download your documents:** Select **Save file** to export your writing as DOCX, HTML, or TXT; select **Print / PDF** to save a PDF through your browser.
-- The website is static GitHub Pages hosting, not a server-side cloud document store. Export backup files regularly, and avoid assuming your work will sync between devices.
+- **Use online:** https://flandersdb-oss.github.io/SUPRA-Writer/ (no sign-in or remote document database).
+- **Download offline:** click **⇩ Get app** on the website. This saves a self-contained HTML file that runs locally in Chrome or Edge without a server.
+- **Install PWA:** use **Install app** when supported by your browser, or use your browser's installation menu. After the first successful online load, the service worker caches the app's static shell for offline access. Available functionality depends on browser support; native APK/EXE packages are not included.
+- **Export your work:** **Save file** offers DOCX, HTML, and TXT; **Print / PDF** uses the browser print dialog.
+- **Important:** unsaved documents may exist only in that browser on that device. Export frequently; no automatic cloud sync or backup is provided.
 
 ## How to use
 
@@ -67,3 +66,7 @@ See `WORD_FEATURE_GAP_AUDIT.md`, `FONT_CATALOGUE.md`, and `TEST_REPORT.md` for e
 ## License
 
 The application code is MIT-licensed (see LICENSE). Fonts are not included and keep their independent license terms.
+
+## Development and contributions
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [the roadmap](docs/ROADMAP.md) and [the release notes](docs/RELEASE_NOTES_v0.2.0.md). CI runs both static and real Chromium browser tests. The source is under the MIT license; external fonts and libraries, if added, must have compatible licenses.

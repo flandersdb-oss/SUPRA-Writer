@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light"><title>SUPRA Writer — Simple, Powerful Writing</title><link rel="stylesheet" href="styles.css"></head>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light"><meta name="theme-color" content="#172638"><meta name="description" content="Free, open-source, offline-capable document editor with simple formatting and DOCX export."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icons/icon-192.png"><title>SUPRA Writer — Simple, Powerful Writing</title><link rel="stylesheet" href="styles.css"></head>
 <body>
 <div id="app">
   <header class="topbar">
@@ -16,7 +16,8 @@
         </div>
       </div>
       <button class="top-btn" id="printBtn" title="Print or choose Save as PDF">▣ <span>Print / PDF</span></button>
-      <a class="top-btn app-download" href="dist/SUPRA_Writer_v0.2_Standalone.html" download="SUPRA_Writer_v0.2_Standalone.html" title="Download SUPRA Writer to run offline, no installation needed" aria-label="Download SUPRA Writer offline application">⇩ <span>Get app</span></a>
+      <a class="top-btn app-download" href="dist/SUPRA_Writer_v0.2_Standalone.html" download="SUPRA_Writer_v0.2_Standalone.html" title="Download SUPRA Writer for offline use">⇩ <span>Get app</span></a>
+      <button class="top-btn" id="installBtn" title="Install as an app on this device" type="button">▣ <span>Install app</span></button>
       <button class="top-btn help-icon" id="helpBtn" title="Help and keyboard shortcuts" aria-label="Help">?</button>
     </div>
   </header>
@@ -85,5 +86,5 @@
   <div class="modal-backdrop" id="modal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button id="closeModal" class="close" aria-label="Close">×</button><h2 id="modalTitle">SUPRA Writer — Quick help</h2><p>Click the page to type. Select words first if you want to style only those words.</p><div class="help-grid"><span>Bold</span><kbd>Ctrl + B</kbd><span>Italic</span><kbd>Ctrl + I</kbd><span>Underline</span><kbd>Ctrl + U</kbd><span>Undo</span><kbd>Ctrl + Z</kbd><span>Save Word file</span><kbd>Ctrl + S</kbd><span>Print / Save PDF</span><kbd>Ctrl + P</kbd></div><p><b>Where are my files?</b> A temporary copy is saved in this browser. Use <b>Save file</b> to keep a separate file on your computer.</p><p><b>Word file compatibility:</b> Basic headings, text styling, lists, tables and layout are supported. Complex DOCX formatting may be simplified when imported.</p></div></div>
   <div id="symbolsModal" class="modal-backdrop" hidden><div class="modal" role="dialog" aria-modal="true" aria-label="Insert a symbol"><button id="closeSymbols" class="close" aria-label="Close">×</button><h2>Insert a symbol</h2><p>Click a symbol to put it where your cursor was. ⸮ is the reversed question mark (historical irony mark), not a universal sarcasm convention.</p><div id="symbolsGrid" class="symbols-grid"></div></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-</div><script src="app.js" defer></script>
+</div><script src="app.js" defer></script><script src="pwa.js" defer></script>
 </body></html>

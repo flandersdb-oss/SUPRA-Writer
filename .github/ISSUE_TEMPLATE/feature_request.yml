@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest an easier setting, accessibility improvement, or document feature
+title: '[Idea] '
+labels: []
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What do you want to accomplish?
+      description: Focus on the result you need rather than the technical setting name.
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: How many clicks or steps does it take today?
+      description: Suggest a one-click approach if possible.
+  - type: textarea
+    id: example
+    attributes:
+      label: Example or reference (optional)
