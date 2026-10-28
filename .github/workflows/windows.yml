@@ -6,6 +6,20 @@ on:
       - 'desktop/**'
       - 'app.js'
       - 'quick-actions.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'package.json'
+      - 'build/**'
+      - 'icons/**'
+      - 'manifest.webmanifest'
+      - 'sw.js'
+      - 'docs/RELEASE_NOTES_v0.5.0-alpha.1.md'
+      - '.github/workflows/windows.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - 'app.js'
       - 'quick-actions.js'
       - 'index.html'
       - 'styles.css'
@@ -14,21 +28,7 @@ on:
       - 'icons/**'
       - 'manifest.webmanifest'
       - 'sw.js'
-      - 'docs/RELEASE_NOTES_v0.4.0-alpha.1.md'
-      - '.github/workflows/windows.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'desktop/**'
-      - 'app.js'
-      - 'index.html'
-      - 'styles.css'
-      - 'package.json'
-      - 'build/**'
-      - 'icons/**'
-      - 'manifest.webmanifest'
-      - 'sw.js'
-      - 'docs/RELEASE_NOTES_v0.4.0-alpha.1.md'
+      - 'docs/RELEASE_NOTES_v0.5.0-alpha.1.md'
       - '.github/workflows/windows.yml'
   workflow_dispatch:
 permissions:
@@ -55,7 +55,7 @@ jobs:
       - name: Upload Windows applications
         uses: actions/upload-artifact@v4
         with:
-          name: SUPRA-Writer-Windows-alpha-v0.4.0
+          name: SUPRA-Writer-Windows-alpha-v0.5.0
           path: |
             release/*.exe
           if-no-files-found: error
@@ -71,20 +71,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: SUPRA-Writer-Windows-alpha-v0.4.0
+          name: SUPRA-Writer-Windows-alpha-v0.5.0
           path: windows-build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test tools
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Verify full browser and document regression suite before release
+        run: npm test
       - name: Create the Windows alpha release if not already present
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          if gh release view v0.4.0-alpha.1 >/dev/null 2>&1; then
+          if gh release view v0.5.0-alpha.1 >/dev/null 2>&1; then
             echo 'Alpha already published; preserving published release assets.'
           else
             test "$(find windows-build -maxdepth 1 -type f -name '*.exe' | wc -l)" -ge 2
-            gh release create v0.4.0-alpha.1 windows-build/*.exe \
+            gh release create v0.5.0-alpha.1 windows-build/*.exe \
               --target "$GITHUB_SHA" \
-              --title 'SUPRA Writer v0.4.0-alpha.1 — Windows Alpha' \
+              --title 'SUPRA Writer v0.5.0-alpha.1 — Windows Alpha' \
               --prerelease \
-              --notes-file docs/RELEASE_NOTES_v0.4.0-alpha.1.md
+              --notes-file docs/RELEASE_NOTES_v0.5.0-alpha.1.md
           fi

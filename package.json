@@ -1,8 +1,8 @@
 {
   "name": "supra-writer",
-  "version": "0.4.0-alpha.1",
+  "version": "0.5.0-alpha.1",
   "private": true,
-  "description": "SUPRA Writer Windows alpha: native file dialogs, offline editor, simplified style controls and unified icons",
+  "description": "SUPRA Writer Windows alpha: manual page breaks, DOCX import/export, offline editing and Quick Actions",
   "license": "MIT",
   "scripts": {
     "test": "node --test tests/*.test.mjs",

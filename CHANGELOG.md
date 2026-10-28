@@ -1,3 +1,11 @@
+## v0.5.0-alpha.1 — staged candidate (not yet released)
+
+- Manual page breaks via toolbar or Ctrl+Enter.
+- DOCX page-break export and import, browser print page-break CSS.
+- New Quick Actions command and browser round-trip test.
+- Release publishing requires a fresh passing browser regression suite.
+- Accurate automatic pagination, headers, footers and full Word compatibility remain incomplete.
+
 # SUPRA Writer — Changelog
 
 ## v0.3.0 Windows Desktop preview
