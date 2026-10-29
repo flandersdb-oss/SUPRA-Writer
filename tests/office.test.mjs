@@ -116,6 +116,9 @@ test('SUPRA Office: Sheets, Present and Writer Visual Setup', {timeout:180000},a
   assert.equal(settings.size,'a4');assert.equal(settings.orientation,'landscape');
   assert.equal(settings.line,1.95);assert.ok(settings.fontSize>initial.fontSize);
   assert.equal(await page.locator('#visualSetupModal').isVisible(),false);
+  await page.locator('#visualSetupBtn').click();
+  await page.locator('#visualAdvanced').click();
+  assert.equal(await page.locator('#advancedPanel').isVisible(),true);
   await page.locator('#revertLookQuick').click();
   const reverted=await page.evaluate(()=>SUPRAWriterTest.settings());assert.equal(reverted.line,initial.line);
   assert.deepEqual(errors,[]);await page.close();
