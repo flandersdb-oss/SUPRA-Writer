@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Create the versioned public release if missing
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
