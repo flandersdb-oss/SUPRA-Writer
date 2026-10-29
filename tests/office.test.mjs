@@ -51,6 +51,12 @@ test('SUPRA Office: Sheets, Present and Writer Visual Setup', {timeout:180000},a
   const jsonPromise=page.waitForEvent('download');await page.locator('#exportJson').click();const json=await jsonPromise;
   const saved=JSON.parse(await fs.readFile(await json.path(),'utf8'));
   assert.equal(saved.type,'SUPRA-SHEETS-v0.1');assert.equal(saved.cells.B7,'=SUM(B2:B5)');
+  // Import negative numeric CSV values without treating them as formulas.
+  page.on('dialog',d=>d.accept());
+  await page.locator('#filePicker').setInputFiles({name:'negative.csv',mimeType:'text/csv',buffer:Buffer.from('Item,Amount\nAdjustment,-25\nUntrusted,=HYPERLINK(1)')});
+  await page.waitForFunction(()=>document.querySelector('[data-cell="B2"]')?.value==='-25');
+  assert.equal(await page.evaluate(()=>SUPRASheetsTest.value('B2')),-25);
+  assert.ok((await page.evaluate(()=>SUPRASheetsTest.value('B3'))).toString().startsWith("'"));
   assert.deepEqual(errors,[]);
   await page.close();
  });
