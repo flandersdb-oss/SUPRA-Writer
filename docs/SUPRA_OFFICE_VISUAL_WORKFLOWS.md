@@ -36,3 +36,7 @@ Future benchmark: count actual clicks and time-to-completion against manual work
 ## Release gates
 
 Automated GitHub CI tests source syntax, real Chromium flows, formula results, HTML export safety and Writer appearance changes. Windows packaging tests must also succeed before any release. GitHub staging branch is **not** a finished stable office suite.
+
+## Autosave and history
+
+See [Autosave, Undo and Redo](AUTOSAVE_UNDO_REDO.md). Current work in each editor is stored locally; Sheets and Present now have 40-step editing history and explicit Undo/Redo buttons, while Writer retains its native editing Undo/Redo and gains a visible Save now control.
