@@ -43,7 +43,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Install packages
@@ -77,7 +77,7 @@ jobs:
         with:
           name: SUPRA-Writer-Windows-alpha-v0.6.0
           path: windows-build
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Install browser test tools
