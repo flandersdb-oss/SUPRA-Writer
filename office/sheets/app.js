@@ -6,7 +6,10 @@ const alphabet='ABCDEFGHIJ';
 const idFor=(r,c)=>alphabet[c]+(r+1);
 const validId=s=>/^[A-J](?:[1-9]|1[0-9]|2[0-5])$/.test(s);
 const blank=()=>({name:'My spreadsheet',cells:{}});
-const data={state:blank(),chosen:'budget',selected:'A1',previous:null};
+const data={state:blank(),chosen:'budget',selected:'A1'};
+const history=window.SUPRAHistory.create(40);let editingCell=null;
+function refreshHistory(){ $('undo').disabled=!history.canUndo();$('redo').disabled=!history.canRedo(); }
+function checkpoint(){history.record(data.state);refreshHistory();}
 const recipes={
  budget:{title:'Monthly budget',steps:['Create Category, Planned, Actual and Difference columns','Enter example spending amounts and editable categories','Calculate differences using cell formulas','Add automatic totals across each numeric column'],cells:{A1:'Category',B1:'Planned',C1:'Actual',D1:'Difference',A2:'Housing',B2:'1000',C2:'950',D2:'=B2-C2',A3:'Food',B3:'350',C3:'375',D3:'=B3-C3',A4:'Travel',B4:'200',C4:'180',D4:'=B4-C4',A5:'Utilities',B5:'120',C5:'110',D5:'=B5-C5',A7:'TOTAL',B7:'=SUM(B2:B5)',C7:'=SUM(C2:C5)',D7:'=B7-C7'}},
  inventory:{title:'Inventory tracker',steps:['Add item, quantity, unit price and stock value columns','Seed editable example inventory','Calculate each item’s total stock value','Calculate total item quantities and values'],cells:{A1:'Item',B1:'Quantity',C1:'Unit price',D1:'Stock value',A2:'Notebook',B2:'12',C2:'4.5',D2:'=B2*C2',A3:'Pen',B3:'25',C3:'1.2',D3:'=B3*C3',A4:'Folder',B4:'8',C4:'3',D4:'=B4*C4',A6:'TOTAL',B6:'=SUM(B2:B4)',D6:'=SUM(D2:D4)'}},
@@ -27,12 +30,18 @@ function safeState(obj){
  return clean;
 }
 function save(){
- try{localStorage.setItem(KEY,JSON.stringify(data.state));$('saveStatus').textContent='Saved locally';}
+ try{localStorage.setItem(KEY,JSON.stringify(data.state));$('saveStatus').textContent='✓ Autosaved on this device';}
  catch{$('saveStatus').textContent='Storage unavailable — export backup';}
 }
-function nameChange(){data.state.name=$('sheetName').value.slice(0,70);save();}
+function nameChange(){const name=$('sheetName').value.slice(0,70);if(name!==data.state.name){checkpoint();data.state.name=name;save();}}
 function raw(id){return data.state.cells[id]||'';}
-function setRaw(id,value){if(!validId(id))throw Error('Outside grid');const text=String(value).slice(0,1000);if(text)data.state.cells[id]=text;else delete data.state.cells[id];save();}
+function setRaw(id,value,group=null){
+ if(!validId(id))throw Error('Outside grid');
+ const text=String(value).slice(0,1000);
+ if(raw(id)===text)return;
+ if(group===null||editingCell!==group){checkpoint();editingCell=group;}
+ if(text)data.state.cells[id]=text;else delete data.state.cells[id];save();
+}
 function tokenize(src){
  let i=0;const tokens=[];
  while(i<src.length){
@@ -110,10 +119,12 @@ function buildGrid(){
   const tr=document.createElement('tr');const row=document.createElement('th');row.scope='row';row.textContent=r+1;tr.append(row);
   for(let c=0;c<COLS;c++){
    const id=idFor(r,c),td=document.createElement('td'),input=document.createElement('input');input.dataset.cell=id;input.setAttribute('aria-label','Cell '+id);
-   input.addEventListener('focus',()=>{data.selected=id;$('cellAddress').value=id;$('formulaBar').value=raw(id);input.value=raw(id);});
+   input.addEventListener('focus',()=>{editingCell=null;data.selected=id;$('cellAddress').value=id;$('formulaBar').value=raw(id);input.value=raw(id);});
+   input.addEventListener('input',()=>{setRaw(id,input.value,id);$('formulaBar').value=raw(id);});
+   input.addEventListener('blur',()=>{editingCell=null;renderGrid();});
    input.addEventListener('change',()=>{setRaw(id,input.value);renderGrid();$('formulaBar').value=raw(id);});
    input.addEventListener('keydown',e=>{
-    if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();setRaw(id,input.value);renderGrid();
+    if(e.key==='Enter'||e.key==='Tab'){e.preventDefault();setRaw(id,input.value,id);editingCell=null;renderGrid();
       const next=e.key==='Tab'?idFor(r,Math.min(COLS-1,c+1)):idFor(Math.min(ROWS-1,r+1),c);document.querySelector('[data-cell="'+next+'"]')?.focus();}
    });
    td.append(input);tr.append(td);
@@ -137,10 +148,11 @@ function updatePreview(){
 function applyTemplate(){
  const rec=recipes[data.chosen];
  if(!isEmpty()&&!confirm('Replace current sheet with '+rec.title+'? You can use Undo template.'))return false;
- data.previous=JSON.stringify(data.state);data.state={name:rec.title,cells:{...rec.cells}};
- $('undo').disabled=false;save();renderGrid();feedback(rec.title+' applied: '+Object.keys(rec.cells).length+' cells prepared with one action.');return true;
+ checkpoint();editingCell=null;data.state={name:rec.title,cells:{...rec.cells}};
+ save();renderGrid();feedback(rec.title+' applied: '+Object.keys(rec.cells).length+' cells prepared with one action.');return true;
 }
-function undo(){if(!data.previous)return;data.state=safeState(JSON.parse(data.previous));data.previous=null;$('undo').disabled=true;save();renderGrid();feedback('Previous sheet restored.');}
+function undo(){const prior=history.undo(data.state);if(!prior)return false;data.state=safeState(prior);editingCell=null;refreshHistory();save();renderGrid();feedback('Edit undone.');return true;}
+function redo(){const next=history.redo(data.state);if(!next)return false;data.state=safeState(next);editingCell=null;refreshHistory();save();renderGrid();feedback('Edit restored.');return true;}
 function formula(kind){
  const selected=data.selected;const c=selected[0],r=Number(selected.slice(1)),previous=r>2?r-1:2;
  const pre={sum:'=SUM('+c+'2:'+c+previous+')',avg:'=AVERAGE('+c+'2:'+c+previous+')',diff:r>1?'='+c+(r-1)+'-1':'=B2-C2',multiply:r>1?'='+c+(r-1)+'*1':'=B2*C2'};
@@ -188,10 +200,11 @@ async function loadFile(file){
   }
  }else throw Error('Choose CSV or SUPRA Sheets JSON');
  if(!isEmpty()&&!confirm('Replace current sheet with imported file?'))return false;
- data.previous=JSON.stringify(data.state);data.state=safeState(next);$('undo').disabled=false;save();renderGrid();feedback('File imported. You can undo this replacement.');return true;
+ checkpoint();editingCell=null;data.state=safeState(next);save();renderGrid();feedback('File imported. You can undo this replacement.');return true;
 }
 for(const b of document.querySelectorAll('[data-template]'))b.addEventListener('click',()=>{data.chosen=b.dataset.template;updatePreview();});
-$('applyTemplate').addEventListener('click',applyTemplate);$('undo').addEventListener('click',undo);
+$('applyTemplate').addEventListener('click',applyTemplate);$('undo').addEventListener('click',undo);$('redo').addEventListener('click',redo);
+$('saveNow').addEventListener('click',()=>{save();feedback('Current sheet saved on this device.');});
 $('sheetName').addEventListener('change',nameChange);$('formulaBar').addEventListener('keydown',e=>{if(e.key==='Enter')writeSelected();});
 $('applyFormula').addEventListener('click',writeSelected);
 for(const b of document.querySelectorAll('[data-formula]'))b.addEventListener('click',()=>formula(b.dataset.formula));
@@ -200,6 +213,13 @@ $('importCsv').addEventListener('click',()=>{$('filePicker').dataset.mode='csv';
 $('importJson').addEventListener('click',()=>{$('filePicker').dataset.mode='json';$('filePicker').accept='.json,application/json';$('filePicker').click();});
 $('filePicker').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{await loadFile(file);}catch(err){feedback('Import failed: '+err.message);}});
 try{const existing=localStorage.getItem(KEY);if(existing)data.state=safeState(JSON.parse(existing));}catch{feedback('Could not restore saved sheet.');}
-buildGrid();renderGrid();updatePreview();save();
-window.SUPRASheetsTest=Object.freeze({setCell:(id,val)=>{setRaw(id,val);renderGrid();},getCell:raw,value,applyTemplate:(id)=>{data.chosen=id;updatePreview();return applyTemplate();},csv:parseCsv,gridSize:()=>({rows:ROWS,cols:COLS})});
+document.addEventListener('keydown',e=>{
+ if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
+ const key=e.key.toLowerCase();
+ if(key!=='z'&&key!=='y')return;
+ if(document.activeElement?.matches('input:not([readonly]),textarea'))return;
+ e.preventDefault();if(key==='y'||e.shiftKey)redo();else undo();
+});
+buildGrid();renderGrid();updatePreview();save();refreshHistory();
+window.SUPRASheetsTest=Object.freeze({setCell:(id,val)=>{setRaw(id,val);renderGrid();},getCell:raw,value,applyTemplate:(id)=>{data.chosen=id;updatePreview();return applyTemplate();},csv:parseCsv,gridSize:()=>({rows:ROWS,cols:COLS}),undo,redo,history:()=>history.counts()});
 })();
