@@ -80,7 +80,7 @@ const presets = {
 function toast(msg){const e=$('toast');e.textContent=msg;e.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('visible'),3200);}
 function status(msg){$('saveStatus').textContent=msg;}
 function updateCounts(){const txt=doc.innerText||doc.textContent||'';const words=(txt.trim().match(/\S+/g)||[]).length;$('wordCount').textContent=words+' word'+(words===1?'':'s');$('charCount').textContent=txt.length+' characters';}
-function store(){try{localStorage.setItem('supra-writer-v02',JSON.stringify({html:doc.innerHTML,name:$('docName').value,settings}));status('Saved in this browser');}catch(err){status('Use Save file to keep changes');}updateCounts();}
+function store(){try{localStorage.setItem('supra-writer-v02',JSON.stringify({html:doc.innerHTML,name:$('docName').value,settings}));status('✓ Autosaved on this device');}catch(err){status('Use Save file to keep changes');}updateCounts();}
 function queueSave(){status('Editing…');clearTimeout(saveTimer);saveTimer=setTimeout(store,600);}
 function contrastRatio(foreground,background){const linear=hex=>{const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];};const l1=linear(foreground),l2=linear(background);return (Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);}
 function updateContrast(){const r=contrastRatio(settings.color,settings.paper);const grade=r>=7?'Excellent contrast':r>=4.5?'Good contrast':r>=3?'Low contrast for small letters':'Very low contrast';$('contrastMeter').textContent='◐ Text / paper contrast: '+r.toFixed(1)+':1 · '+grade;$('contrastMeter').classList.toggle('contrast-warning',r<4.5);}
@@ -334,7 +334,7 @@ function wire(){
  $('addLink').addEventListener('mousedown',e=>e.preventDefault());$('addLink').addEventListener('click',addLink);
  $('addTable').addEventListener('mousedown',e=>e.preventDefault());$('addTable').addEventListener('click',addTable);
  $('addPageBreak').addEventListener('mousedown',e=>e.preventDefault());$('addPageBreak').addEventListener('click',addPageBreak);
- $('undoBtn').addEventListener('click',()=>command('undo'));$('redoBtn').addEventListener('click',()=>command('redo'));
+ $('undoBtn').addEventListener('click',()=>command('undo'));$('redoBtn').addEventListener('click',()=>command('redo'));$('saveNowBtn').addEventListener('click',()=>{clearTimeout(saveTimer);store();toast('Saved to this device');});
  $('docName').addEventListener('input',queueSave);doc.addEventListener('input',queueSave);doc.addEventListener('keyup',saveSelection);doc.addEventListener('mouseup',saveSelection);doc.addEventListener('focusout',saveSelection);
  doc.addEventListener('paste',e=>{const html=e.clipboardData?.getData('text/html');const txt=e.clipboardData?.getData('text/plain');if(html||txt){e.preventDefault();insertHtml(html?html:textToHtml(txt));}});
  $('saveMenuBtn').addEventListener('click',()=>{let open=$('saveMenu').hidden;$('saveMenu').hidden=!open;$('saveMenuBtn').setAttribute('aria-expanded',open?'true':'false');});
