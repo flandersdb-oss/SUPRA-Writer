@@ -81,6 +81,23 @@ test('SUPRA Office: Sheets, Present and Writer Visual Setup', {timeout:180000},a
   await page.locator('#newSlide').click();assert.equal(await page.evaluate(()=>SUPRAPresentTest.getSlides().length),4);
   assert.deepEqual(errors,[]);await page.close();
  });
+ await t.test('Offline: Sheets and Present reopen from the cached shell',async()=>{
+  const context=await browser.newContext({serviceWorkers:'allow'});
+  const page=await context.newPage();
+  await page.goto(url+'office/sheets/',{waitUntil:'load'});
+  await page.evaluate(async()=>{
+   await navigator.serviceWorker.ready;
+   if(!navigator.serviceWorker.controller)await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));
+  });
+  await context.setOffline(true);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('[data-cell="A1"]').waitFor({timeout:10000});
+  assert.equal(await page.evaluate(()=>typeof SUPRASheetsTest),'object');
+  await page.goto(url+'office/present/',{waitUntil:'domcontentloaded'});
+  await page.locator('#applyRecipe').waitFor({timeout:10000});
+  assert.equal(await page.evaluate(()=>typeof SUPRAPresentTest),'object');
+  await context.close();
+ });
  await t.test('Writer: Visual Setup sets multiple real editor settings and can undo',async()=>{
   const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(url);
