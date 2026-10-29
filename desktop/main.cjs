@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
 
-const ALLOWED_EXTENSIONS = new Set(['.docx','.html','.txt']);
+const ALLOWED_EXTENSIONS = new Set(['.docx','.html','.txt','.md','.markdown']);
 const MAX_BYTES = 25 * 1024 * 1024;
 const ROOT = path.resolve(__dirname, '..');
 let window = null;
@@ -17,7 +17,8 @@ const isSafeExtension = p => ALLOWED_EXTENSIONS.has(path.extname(p).toLowerCase(
 const files = [
   {name:'Word document',extensions:['docx']},
   {name:'HTML document',extensions:['html']},
-  {name:'Plain text',extensions:['txt']}
+  {name:'Plain text',extensions:['txt']},
+  {name:'Markdown',extensions:['md','markdown']}
 ];
 function targetWindow(event) {
   if (!window || window.isDestroyed() || event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame) {
@@ -96,7 +97,7 @@ function safeBytes(bytes){
 function wireIpc() {
   ipcMain.handle('document:open',async event=>{
     const win=targetWindow(event);
-    const out=await dialog.showOpenDialog(win,{title:'Open a document',properties:['openFile'],filters:[{name:'Word, HTML or text',extensions:['docx','html','txt']},...files]});
+    const out=await dialog.showOpenDialog(win,{title:'Open a document',properties:['openFile'],filters:[{name:'Word, HTML, text or Markdown',extensions:['docx','html','txt','md','markdown']},...files]});
     if(out.canceled || !out.filePaths.length)return null;
     return readDocument(out.filePaths[0]);
   });
