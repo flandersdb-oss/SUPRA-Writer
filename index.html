@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light"><meta name="theme-color" content="#172638"><meta name="description" content="Free, open-source, offline-capable document editor with simple formatting and DOCX export."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png" type="image/png"><link rel="apple-touch-icon" href="icons/icon-192.png"><title>SUPRA Writer — Simple, Powerful Writing</title><link rel="stylesheet" href="styles.css"></head>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light"><meta name="theme-color" content="#172638"><meta name="description" content="Free, open-source, offline-capable document editor with simple formatting and DOCX export."><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png" type="image/png"><link rel="apple-touch-icon" href="icons/icon-192.png"><title>SUPRA Writer — Simple, Powerful Writing</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="office/writer-assistant.css"></head>
 <body>
 <div id="app">
   <header class="topbar">
@@ -8,6 +8,7 @@
     <div class="top-actions">
       <button class="top-btn" id="newBtn" title="Start a new document">✧ <span>New</span></button>
       <button class="top-btn" id="openBtn" title="Open DOCX, HTML, or text from your computer">↥ <span>Open</span></button>
+      <button class="top-btn" type="button" id="visualSetupBtn" title="Choose a document goal and apply multiple settings visually">✦ <span>Visual Setup</span></button>
       <button class="top-btn" type="button" id="showFind" title="Find or replace text (Ctrl+F)">⌕ <span>Find</span></button>
       <div class="dropdown-wrap"><button class="top-btn top-primary" id="saveMenuBtn" aria-expanded="false">↓ <span>Save file</span> ▾</button>
         <div class="dropdown-menu" id="saveMenu" hidden>
@@ -96,5 +97,5 @@
   <div class="modal-backdrop" id="modal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button id="closeModal" class="close" aria-label="Close">×</button><h2 id="modalTitle">SUPRA Writer — Quick help</h2><p>Click the page to type. Select words first if you want to style only those words.</p><div class="help-grid"><span>Bold</span><kbd>Ctrl + B</kbd><span>Italic</span><kbd>Ctrl + I</kbd><span>Underline</span><kbd>Ctrl + U</kbd><span>Undo</span><kbd>Ctrl + Z</kbd><span>Save Word file</span><kbd>Ctrl + S</kbd><span>Print / Save PDF</span><kbd>Ctrl + P</kbd><span>Start a new page</span><kbd>Ctrl + Enter</kbd></div><p><b>Where are my files?</b> A temporary copy is saved in this browser. Use <b>Save file</b> to keep a separate file on your computer.</p><p><b>Word file compatibility:</b> Basic headings, text styling, lists, tables and layout are supported. Complex DOCX formatting may be simplified when imported.</p></div></div>
   <div id="symbolsModal" class="modal-backdrop" hidden><div class="modal" role="dialog" aria-modal="true" aria-label="Insert a symbol"><button id="closeSymbols" class="close" aria-label="Close">×</button><h2>Insert a symbol</h2><p>Click a symbol to put it where your cursor was. ⸮ is the reversed question mark (historical irony mark), not a universal sarcasm convention.</p><div id="symbolsGrid" class="symbols-grid"></div></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-</div><script src="app.js" defer></script><script src="pwa.js" defer></script>
+</div><script src="app.js" defer></script><script src="pwa.js" defer></script><script src="office/writer-assistant.js" defer></script>
 </body></html>
