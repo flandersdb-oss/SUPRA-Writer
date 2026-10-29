@@ -34,6 +34,9 @@ test('SUPRA Office: Sheets, Present and Writer Visual Setup', {timeout:180000},a
   const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url+'office/sheets/');
   await page.locator('[data-cell="A1"]').waitFor();
   const dims=await page.evaluate(()=>SUPRASheetsTest.gridSize());assert.deepEqual(dims,{rows:25,cols:10});
+  const shell=await fs.readFile(path.join(root,'sw.js'),'utf8');
+  for(const asset of ['./office/sheets/index.html','./office/present/index.html','./office/shared.css','./office/register.js'])
+   assert.ok(shell.includes(asset),'Offline cache includes '+asset);
   await page.locator('#applyTemplate').click();
   assert.equal(await page.evaluate(()=>SUPRASheetsTest.value('B7')),1670);
   assert.equal(await page.evaluate(()=>SUPRASheetsTest.value('C7')),1615);
