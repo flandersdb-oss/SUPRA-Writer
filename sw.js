@@ -13,7 +13,10 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || !url.href.startsWith(self.registration.scope)) return;
-  const key = urls.includes(url.href) ? url.href : request.mode === 'navigate' ? new URL('./index.html', self.registration.scope).href : null;
+  // Directory URLs (/office/sheets/) correspond to cached index.html files.
+  const canonical = url.pathname.endsWith('/') ? new URL('./index.html', url.href).href : url.href;
+  const key = urls.includes(url.href) ? url.href : urls.includes(canonical) ? canonical :
+    request.mode === 'navigate' ? new URL('./index.html', self.registration.scope).href : null;
   if (!key) return;
   event.respondWith(fetch(request).then(response => {
     if (response.ok && response.type === 'basic' && urls.includes(url.href)) {
