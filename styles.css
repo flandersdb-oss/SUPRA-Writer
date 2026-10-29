@@ -79,3 +79,6 @@
 #document [data-supra-page-break="true"]{display:block;position:relative;min-height:26px;margin:20px 0;border-top:2px dashed #84a5ca;break-before:page;page-break-before:always;user-select:none;cursor:default}
 #document [data-supra-page-break="true"]::before{content:"▯ New page";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#e8f1fb;border:1px solid #b9cee6;color:#24507b;border-radius:20px;font:600 11px system-ui,sans-serif;padding:3px 11px;white-space:nowrap}
 @media print{#document [data-supra-page-break="true"]{min-height:0!important;height:0!important;margin:0!important;padding:0!important;border:0!important;break-before:page!important;page-break-before:always!important}#document [data-supra-page-break="true"]::before{display:none!important}}
+
+/* The standalone Windows Writer app does not package experimental web-only Office pages. */
+.supra-desktop .office-link{display:none!important}

@@ -1,4 +1,4 @@
-# SUPRA Writer v0.4.0-alpha.1 — Browser + Windows desktop (alpha)
+# SUPRA Writer v0.6.0-alpha.1 — Windows alpha and SUPRA Office prototypes
 
 An original **MIT-licensed**, offline-first word processor that aims to replace cryptic setting names with plain English, glyphs, live examples, and one-click document looks. It is a functioning browser application, **not** yet a complete Word/LibreOffice replacement.
 
@@ -8,11 +8,21 @@ See [Windows Desktop guide](docs/WINDOWS_DESKTOP.md). A GitHub Actions workflow 
 
 ## Current alpha release
 
-- [Windows alpha v0.4.0-alpha.1](https://github.com/flandersdb-oss/SUPRA-Writer/releases/tag/v0.4.0-alpha.1) — installer and portable (once Windows build succeeds).
+- [Windows alpha v0.6.0-alpha.1](https://github.com/flandersdb-oss/SUPRA-Writer/releases/tag/v0.6.0-alpha.1) — installer and portable (once Windows build succeeds).
 - [Design system](docs/BRAND_SYSTEM.md) — provisional cross-platform icon family.
-- [Alpha release notes](docs/RELEASE_NOTES_v0.4.0-alpha.1.md).
+- [Alpha release notes](docs/RELEASE_NOTES_v0.6.0-alpha.1.md).
 
-> Current production preview remains v0.4.0-alpha.1. The next v0.5 page-break feature is in [staging PR #11](https://github.com/flandersdb-oss/SUPRA-Writer/pull/11) and is not yet a stable release.
+> Current published alpha remains v0.5 until this v0.6 candidate passes CI and is released. Windows v0.6 includes Writer Visual Setup; Sheets and Present remain browser-only prototypes.
+
+## SUPRA Office experimental prototypes
+
+- [SUPRA Office hub](office/) — choose Writer, Sheets or Present.
+- [SUPRA Sheets prototype](office/sheets/) — editable 250-cell grid, basic formulas, CSV and local JSON backup.
+- [SUPRA Present prototype](office/present/) — editable/reorderable slides, four themes, HTML slideshow and JSON backup.
+- **Writer Visual Setup** — six document goals, visible list of settings, four optional overrides, one Apply action. Advanced controls remain available.
+- [Visual workflows and limitations](docs/SUPRA_OFFICE_VISUAL_WORKFLOWS.md).
+
+Sheets and Present are *not* XLSX/PPTX-compatible yet, and are not feature-complete office replacements.
 
 ## Run in one step
 
