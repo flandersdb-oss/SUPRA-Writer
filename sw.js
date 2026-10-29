@@ -18,14 +18,20 @@ self.addEventListener('fetch', event => {
   const key = urls.includes(url.href) ? url.href : urls.includes(canonical) ? canonical :
     request.mode === 'navigate' ? new URL('./index.html', self.registration.scope).href : null;
   if (!key) return;
-  event.respondWith(fetch(request).then(response => {
-    if (response.ok && response.type === 'basic' && urls.includes(url.href)) {
-      const copy = response.clone();
-      event.waitUntil(caches.open(CACHE).then(cache => cache.put(url.href, copy)));
+  // Cache-first for known versioned application-shell assets: ensures offline reload
+  // of the individual Sheets/Present routes, not a fallback to the Writer page.
+  event.respondWith((async () => {
+    const cached = await caches.match(key, {ignoreSearch:true});
+    if (cached) return cached;
+    try {
+      const response = await fetch(request);
+      if (response.ok && response.type === 'basic' && urls.includes(url.href)) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE).then(cache => cache.put(url.href, copy)));
+      }
+      return response;
+    } catch {
+      return new Response('SUPRA Office is offline and this page is not yet cached.', {status:503, headers:{'content-type':'text/plain'}});
     }
-    return response;
-  }).catch(async () => {
-    const cached = await caches.match(request, {ignoreSearch:true}) || await caches.match(key);
-    return cached || new Response('SUPRA Writer is offline and this page is not yet cached.', {status:503, headers:{'content-type':'text/plain'}});
-  }));
+  })());
 });
