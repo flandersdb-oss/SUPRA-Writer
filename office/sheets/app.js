@@ -180,7 +180,11 @@ async function loadFile(file){
   next=blank();next.name=file.name.replace(/\.csv$/i,'');for(let r=0;r<rows.length;r++)for(let c=0;c<rows[r].length;c++){
    const value=String(rows[r][c]).slice(0,1000);
    // A CSV is untrusted external data; formulas are not automatically executed on import.
-   if(value)next.cells[idFor(r,c)]=/^[=+\-@]/.test(value)?"'"+value:value;
+   if(value){
+    // Ordinary signed numerals must remain numbers; other formula-like CSV text is inert.
+    const isNumber=/^[+\-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+\-]?\d+)?$/.test(value.trim());
+    next.cells[idFor(r,c)]=!isNumber&&/^[=+\-@]/.test(value)?"'"+value:value;
+   }
   }
  }else throw Error('Choose CSV or SUPRA Sheets JSON');
  if(!isEmpty()&&!confirm('Replace current sheet with imported file?'))return false;
