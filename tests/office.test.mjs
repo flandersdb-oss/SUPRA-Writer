@@ -9,7 +9,8 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 async function server(){
  const s=http.createServer(async(req,res)=>{
   const pathPart=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
-  const p=path.resolve(root,'.'+(pathPart==='/'?'/index.html':pathPart));
+  const location=pathPart.endsWith('/')?pathPart+'index.html':pathPart;
+  const p=path.resolve(root,'.'+location);
   if(!p.startsWith(root+path.sep)){res.writeHead(403).end();return;}
   try{const bytes=await fs.readFile(p),ext=path.extname(p),types={'.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.html':'text/html','.webmanifest':'application/manifest+json'};
    res.writeHead(200,{'content-type':types[ext]||'application/octet-stream'});res.end(bytes);
