@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id),KEY='supra-present-v01',THEMES=['classic','dark','modern','lecture'],MAX=50;
 const copy=x=>JSON.parse(JSON.stringify(x));
 const slide=(title='',subtitle='',bullets=[])=>({title,subtitle,bullets});
-const blank=()=>({name:'My presentation',theme:'classic',slides:[slide('Your title','Explain your main idea',['First point'])]});
+const blank=()=>({name:'My presentation',theme:'classic',slides:[slide()]});
 const recipes={
  pitch:{name:'Project proposal',theme:'dark',steps:['Create an opening slide explaining your project','Add a problem and opportunity slide','Add a clear solution and next-steps slide','Apply the futuristic navy and gold visual theme'],slides:[
  slide('A better way to work','Project proposal',['What we want to improve','Why the change matters']),

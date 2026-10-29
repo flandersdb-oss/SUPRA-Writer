@@ -149,13 +149,13 @@ function writeSelected(){setRaw(data.selected,$('formulaBar').value);renderGrid(
 function csvEscape(value){
  let x=String(value);
  // Prevent spreadsheet formula injection on export of user-entered text.
- if(/^[=+\-@\t\r]/.test(x))x="'"+x;
+ if(typeof value!=='number'&&/^[=+\-@\t\r]/.test(x))x="'"+x;
  return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;
 }
 function exportCsv(){
  const rows=[];let last=0,lastCol=0;
  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(raw(idFor(r,c)).trim()){last=Math.max(last,r);lastCol=Math.max(lastCol,c);}
- for(let r=0;r<=last;r++){const cols=[];for(let c=0;c<=lastCol;c++){const id=idFor(r,c),v=value(id);cols.push(csvEscape(fmt(v)));}rows.push(cols.join(','));}
+ for(let r=0;r<=last;r++){const cols=[];for(let c=0;c<=lastCol;c++){const id=idFor(r,c),v=value(id);cols.push(csvEscape(v));}rows.push(cols.join(','));}
  download((rows.join('\r\n')||'')+'\r\n',safeName()+'.csv','text/csv');
  feedback('CSV exported with calculated values. Use JSON to preserve formulas.');
 }
