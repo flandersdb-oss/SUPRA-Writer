@@ -1,7 +1,7 @@
 # SUPRA Office Autosave, Undo and Redo — Alpha
 
 ## Shared interaction
-- **Writer:** Browser local storage saves after 120 ms of idle time, with a maximum 1-second gap even during continuous typing. It also flushes pending changes immediately on focus loss, when the tab becomes hidden, on pagehide and beforeunload. Visible Undo / Redo are the editor's native text-edit history, and Save now writes the local draft immediately. **Undo look** remains a separate control for appearance presets.
+- **Writer:** Browser local storage uses adaptive idle saves: 50 ms for small documents, 120 ms for medium (100k+ HTML characters), and 300 ms for large (500k+). A 1-second maximum checkpoint remains during continuous typing. It also flushes pending changes immediately on focus loss, when the tab becomes hidden, on pagehide and beforeunload. Visible Undo / Redo are the editor's native text-edit history, and Save now writes the local draft immediately. **Undo look** remains a separate control for appearance presets.
 - **Sheets:** Automatically saves whenever a cell changes (including while typing), when the sheet name changes, or when a workflow/import is applied. Undo and Redo restore up to 40 committed snapshots. Typing within a single focused cell is grouped into one snapshot.
 - **Present:** Autosaves text while typing, slide reordering/add/delete, template application, theme, and deck name. Undo/Redo restore up to 40 snapshots. Typing in a single focused text field is grouped into one snapshot.
 
@@ -15,3 +15,6 @@
 
 ## Limitations
 The browser's native Undo in focused text fields may behave differently from project-level undo. Windows packaged Writer uses the same controls but needs real-machine verification.
+
+## Recovery versions
+SUPRA Writer v0.7 adds up to 12 rolling IndexedDB recovery points, approximately one every 60 seconds of editing activity (and optional manual points). Open **Versions** and select a version to restore. Restoring first snapshots the existing draft so it can be recovered. These revisions are local to the current browser/device; clearing site storage removes them. This is distinct from undo and explicit file export.

@@ -19,3 +19,9 @@ Browser regression tests cover mode switching, autosaved content preservation, b
 - A 1-second maximum interval allows checkpoints during continuous typing; editor blur, page hide and tab backgrounding flush pending changes immediately.
 - Browser storage errors are surfaced instead of claiming successful saves.
 - This interval improvement is a configuration measurement, **not a benchmark of actual storage latency**; typing performance depends on document size and device.
+
+## Adaptive autosave + recovery
+- Small files save after 50 ms of idle time (58.3% less than the previous 120 ms, 12× shorter than the original 600 ms).
+- 100k+ HTML-character files use 120 ms and 500k+ use 300 ms, avoiding extra full-document serialization on every key.
+- Continuous typing gets a 1-second checkpoint; on blur, pagehide, or tab backgrounding the current draft is flushed.
+- Added local IndexedDB **Versions** history (up to 12 revisions, about 60 seconds apart) with manual snapshot and safe restore. It is not cloud backup.

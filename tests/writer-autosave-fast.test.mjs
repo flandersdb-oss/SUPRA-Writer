@@ -19,7 +19,7 @@ test('Writer fast autosave: idle, continuous input, and focus loss', {timeout:12
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:'+server.address().port+'/');
  await page.locator('#document').waitFor();
- assert.deepEqual(await page.evaluate(()=>{const p=SUPRAWriterTest.autosave();return {idleMs:p.idleMs,maxMs:p.maxMs};}),{idleMs:120,maxMs:1000});
+ assert.deepEqual(await page.evaluate(()=>{const p=SUPRAWriterTest.autosave();return {idleMs:p.idleMs,maxMs:p.maxMs};}),{idleMs:50,maxMs:1000});
  await t.test('idle save persists new content, then reload restores it',async()=>{
   await page.locator('#document').fill('Idle autosave evidence');
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('supra-writer-v02')||'{}').html?.includes('Idle autosave evidence'),{timeout:1500});
@@ -51,6 +51,24 @@ test('Writer fast autosave: idle, continuous input, and focus loss', {timeout:12
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('supra-writer-v02')||'{}').html||'');
   assert.match(saved,/Flush on focus loss/);
   assert.equal(await page.evaluate(()=>SUPRAWriterTest.autosave().pending),false);
+ });
+ await t.test('recovery snapshots persist and restore an older draft',async()=>{
+  const recovery=await page.evaluate(()=>({limit:SUPRAWriterRecovery.getLimit(),interval:SUPRAWriterRecovery.getInterval()}));
+  assert.deepEqual(recovery,{limit:12,interval:60000});
+  await page.locator('#document').fill('Older recovery version');
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('supra-writer-v02')||'{}').html?.includes('Older recovery version'));
+  await page.evaluate(()=>SUPRAWriterRecovery.record({html:document.getElementById('document').innerHTML,name:'Older',settings:SUPRAWriterTest.settings()},true));
+  await page.locator('#document').fill('Latest recovery version');
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('supra-writer-v02')||'{}').html?.includes('Latest recovery version'));
+  page.on('dialog',dialog=>dialog.accept());
+  await page.locator('#supraRecoveryBtn').click();
+  await page.locator('#supraRecoverySave').click();
+  await page.waitForFunction(()=>document.querySelectorAll('#supraRecoveryEntries li').length>=2);
+  const older=page.locator('#supraRecoveryEntries li').filter({hasText:'Older'}).first();
+  await older.locator('button').click();
+  await page.waitForFunction(()=>document.getElementById('document').innerText.includes('Older recovery version'));
+  assert.match(await page.locator('#document').innerText(),/Older recovery version/);
+  await page.locator('#supraRecoveryClose').click();
  });
  assert.deepEqual(errors,[]);
 });
