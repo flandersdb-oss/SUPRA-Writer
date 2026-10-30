@@ -178,7 +178,7 @@ function wireIpc() {
   });
   ipcMain.handle('catalog:open',async (event,id)=>{
    targetWindow(event);
-   if(typeof id!=='string'||!/^[1-9]\\d{0,5}$/.test(id))throw Error('Invalid document identifier');
+   if(typeof id!=='string'||!/^[1-9]\d{0,5}$/.test(id))throw Error('Invalid document identifier');
    const entry=catalogIndex.get(id);
    if(!entry||!entry.item.canOpen)throw Error('This document requires a verified converter');
    const verified=await catalog.verifyIndexedFile(entry);
