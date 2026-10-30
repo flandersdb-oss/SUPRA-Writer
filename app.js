@@ -334,6 +334,7 @@ function wireFind(){
  $('closeFind').addEventListener('click',()=>{$('findBar').hidden=true;doc.focus();});
  $('findText').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();findNextMatch();}});
 }
+window.SUPRAOpenDiscoveredFile=file=>openFile(file);
 async function openFromWindows(){try{const item=await window.SUPRADesktop.openDocument();if(item)await openFile(new File([new Uint8Array(item.bytes)],item.name));}catch(e){toast('Open failed: '+e.message);}}
 function wireWindowsHost(){
  if(!window.SUPRADesktop)return;

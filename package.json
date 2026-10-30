@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "test:syntax": "node --check app.js && node --check pwa.js && node --check sw.js && node --check quick-actions.js && node --check office/writer-assistant.js && node --check office/sheets/app.js && node --check office/present/app.js && node --check office/history.js && node --check office/writer-modes.js && node --check office/writer-recovery.js",
+    "test:syntax": "node --check app.js && node --check pwa.js && node --check sw.js && node --check quick-actions.js && node --check office/writer-assistant.js && node --check office/sheets/app.js && node --check office/present/app.js && node --check office/history.js && node --check office/writer-modes.js && node --check office/writer-recovery.js && node --check office/writer-discovery.js && node --check desktop/document-catalog.cjs",
     "start:windows": "electron .",
     "build:win": "electron-builder --win nsis portable --x64 --publish never",
     "test:desktop": "node --test tests/desktop.test.mjs",
@@ -42,7 +42,8 @@
       "office/writer-assistant.js",
       "office/writer-assistant.css",
       "office/writer-modes.js",
-      "office/writer-recovery.js"
+      "office/writer-recovery.js",
+      "office/writer-discovery.js"
     ],
     "win": {
       "icon": "build/icon.ico",
