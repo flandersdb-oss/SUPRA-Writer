@@ -14,6 +14,8 @@ See [Windows Desktop guide](docs/WINDOWS_DESKTOP.md). A GitHub Actions workflow 
 
 > Current published alpha remains v0.5 until this v0.6 candidate passes CI and is released. Windows v0.6 includes Writer Visual Setup; Sheets and Present remain browser-only prototypes.
 
+[Fonts, file formats and speed audit](docs/WRITER_FONTS_FORMATS_SPEED_AUDIT.md) documents all 174 font names, Papyrus search, installed-font checks, Markdown boundaries and universal format priorities.
+
 ## Writer editions (development preview)
 
 The same Writer engine now offers two interface profiles: **Fast & Accessible** (default) and **Universal** (compatibility guidance). The document, formatting, local autosave and existing keyboard shortcuts are shared, so switching profiles does not convert or replace the document.
