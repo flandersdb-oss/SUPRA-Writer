@@ -29,6 +29,17 @@ function render(){
     }else $('catalogAdvice').textContent=item.extension+' has no verified automatic converter in this alpha. The original file is unchanged.';
     return;
    }
+   const current=document.getElementById('document');
+   if(current?.innerText?.trim()){
+    if(!confirm('Opening '+item.name+' will replace the document shown in Writer. Save a copy first if needed. Continue?'))return;
+    try{
+     if(window.SUPRAWriterRecovery?.record){
+      await window.SUPRAWriterRecovery.record({html:current.innerHTML,name:document.getElementById('docName')?.value||'Current document',settings:window.SUPRAWriterTest?.settings?.()||{}},true);
+     }
+    }catch(error){
+     if(!confirm('Could not make a recovery copy ('+error.message+'). Open anyway?'))return;
+    }
+   }
    try{
     const result=await api.catalogOpen(item.id);
     if(!window.SUPRAOpenDiscoveredFile)throw Error('Editor unavailable');
