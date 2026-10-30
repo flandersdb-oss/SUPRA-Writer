@@ -5,6 +5,7 @@ const path=require('node:path');
 const READABLE=new Set(['.docx','.html','.htm','.txt','.md','.markdown']);
 const OPTIONAL=new Set(['.odt','.fodt','.rtf','.doc','.docm','.pages','.wpd','.abw','.wps','.tex','.epub','.pdf','.sxw','.ott','.xml','.rst','.org','.asciidoc']);
 const MAX_ITEMS=5000,MAX_DEPTH=8,MAX_ROOTS=10,MAX_OPEN_BYTES=25*1024*1024;
+const MAX_VISITED_DIRS=2500,MAX_SEEN_ENTRIES=40000,MAX_SCAN_MS=12000;
 const SKIP_DIRS=new Set(['node_modules','appdata','program files','program files (x86)','programdata','system volume information','$recycle.bin','windows']);
 const PANDOC_FORMATS=new Set(['.tex','.epub','.rst','.org','.asciidoc']);
 const LIBREOFFICE_FORMATS=new Set(['.odt','.fodt','.rtf','.doc','.wpd','.abw','.wps','.sxw','.ott']);
@@ -22,16 +23,20 @@ async function scanRoots(paths,options={}){
  if(!Array.isArray(paths)||paths.length>MAX_ROOTS)throw Error('Choose at most ten folders');
  const maxItems=Math.min(MAX_ITEMS,Math.max(1,Number(options.maxItems)||MAX_ITEMS));
  const maxDepth=Math.min(MAX_DEPTH,Math.max(0,Number.isInteger(options.maxDepth)?options.maxDepth:MAX_DEPTH));
- const results=[],seen=new Set();let examined=0,skipped=0,truncated=false;
+ const results=[],seen=new Set();let examined=0,skipped=0,truncated=false,visitedDirs=0,seenEntries=0;
+ const deadline=Date.now()+MAX_SCAN_MS;
  for(const input of paths){
   if(typeof input!=='string'||!path.isAbsolute(input))continue;
   let root;try{root=await fs.realpath(input);if(!(await fs.stat(root)).isDirectory())continue;}catch{skipped++;continue;}
   // Each configured root is explicitly selected by the user; do not traverse outside it.
   const stack=[{dir:root,depth:0}];
   while(stack.length){
+   if(Date.now()>deadline||visitedDirs>=MAX_VISITED_DIRS){truncated=true;break;}
+   visitedDirs++;
    const {dir,depth}=stack.pop();let entries;
    try{entries=await fs.readdir(dir,{withFileTypes:true});}catch{skipped++;continue;}
    for(const e of entries){
+    if(++seenEntries>MAX_SEEN_ENTRIES||Date.now()>deadline){truncated=true;break;}
     if(e.name.startsWith('.')||e.isSymbolicLink()||(e.isDirectory()&&SKIP_DIRS.has(e.name.toLowerCase())))continue;
     const full=path.join(dir,e.name);
     if(!inside(root,full))continue;
@@ -60,7 +65,7 @@ async function scanRoots(paths,options={}){
   }
   if(truncated)break;
  }
- return {items:results,examined,skipped,truncated,maxItems,maxDepth};
+ return {items:results,examined,skipped,truncated,visitedDirs,seenEntries,maxItems,maxDepth};
 }
 async function verifyIndexedFile(entry){
  if(!entry?.path||!entry.root)throw Error('Unknown indexed file');
