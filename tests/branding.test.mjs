@@ -7,7 +7,7 @@ const read=p=>fs.readFileSync(path.join(root,p));
 const pkg=JSON.parse(read('package.json').toString());
 const manifest=JSON.parse(read('manifest.webmanifest').toString());
 test('alpha version and actual Windows icon file',()=>{
- assert.equal(pkg.version,'0.6.0-alpha.1');
+ assert.equal(pkg.version,'0.7.0-alpha.1');
  assert.equal(pkg.build.win.icon,'build/icon.ico');
  const ico=read('build/icon.ico');
  assert.equal(ico.readUInt16LE(2),1); // Windows ICO header

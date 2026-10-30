@@ -4,7 +4,10 @@
 const $ = id => document.getElementById(id);
 const doc = $('document');
 const defaults = {font:"Arial, Helvetica, sans-serif",fontSize:15,line:1.65,color:'#1c2938',paper:'#ffffff',size:'letter',margin:'normal',orientation:'portrait',zoom:100,letterSpacing:0,wordSpacing:0,fontWeight:400,paragraphSpace:1.05,firstIndent:0,marginCustom:90,headingColor:'#263f60',align:'left'};
-let settings = {...defaults}; let savedRange = null; let saveTimer = null; let toastTimer = null;
+let settings = {...defaults}; let savedRange = null; let saveTimer = null; let maxSaveTimer = null; let toastTimer = null;
+const AUTOSAVE_IDLE_MS = 120; // Save shortly after input settles; do not block typing on every keystroke.
+const AUTOSAVE_MAX_MS = 1000; // Continuous typing still checkpoints at least once each second.
+let unsavedChanges = false;
 const dims = {letter:[816,1056],a4:[794,1123]};
 const margins = {narrow:37,normal:90,wide:120};
 const getMargin = () => settings.margin==='custom'?Math.max(20,Math.min(160,Number(settings.marginCustom)||90)):(margins[settings.margin]||90);
@@ -80,8 +83,21 @@ const presets = {
 function toast(msg){const e=$('toast');e.textContent=msg;e.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('visible'),3200);}
 function status(msg){$('saveStatus').textContent=msg;}
 function updateCounts(){const txt=doc.innerText||doc.textContent||'';const words=(txt.trim().match(/\S+/g)||[]).length;$('wordCount').textContent=words+' word'+(words===1?'':'s');$('charCount').textContent=txt.length+' characters';}
-function store(){try{localStorage.setItem('supra-writer-v02',JSON.stringify({html:doc.innerHTML,name:$('docName').value,settings}));status('✓ Autosaved on this device');}catch(err){status('Use Save file to keep changes');}updateCounts();}
-function queueSave(){status('Editing…');clearTimeout(saveTimer);saveTimer=setTimeout(store,600);}
+function store(){
+ clearTimeout(saveTimer);saveTimer=null;clearTimeout(maxSaveTimer);maxSaveTimer=null;
+ try{
+  localStorage.setItem('supra-writer-v02',JSON.stringify({html:doc.innerHTML,name:$('docName').value,settings}));
+  unsavedChanges=false;status('✓ Autosaved on this device');updateCounts();return true;
+ }catch(err){
+  unsavedChanges=true;status('Autosave unavailable — use Save file');updateCounts();return false;
+ }
+}
+function queueSave(){
+ unsavedChanges=true;status('Saving…');
+ clearTimeout(saveTimer);saveTimer=setTimeout(store,AUTOSAVE_IDLE_MS);
+ if(maxSaveTimer===null)maxSaveTimer=setTimeout(store,AUTOSAVE_MAX_MS);
+}
+function flushAutosave(){if(unsavedChanges)store();}
 function contrastRatio(foreground,background){const linear=hex=>{const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];};const l1=linear(foreground),l2=linear(background);return (Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);}
 function updateContrast(){const r=contrastRatio(settings.color,settings.paper);const grade=r>=7?'Excellent contrast':r>=4.5?'Good contrast':r>=3?'Low contrast for small letters':'Very low contrast';$('contrastMeter').textContent='◐ Text / paper contrast: '+r.toFixed(1)+':1 · '+grade;$('contrastMeter').classList.toggle('contrast-warning',r<4.5);}
 function updatePreview(){const [dw,dh]=dims[settings.size];const wide=settings.orientation==='landscape';const w=wide?dh:dw,h=wide?dw:dh;const pg=$('pageFrame');const mobile=innerWidth<750;pg.style.width=mobile?'100%':w+'px';pg.style.minHeight=mobile?'600px':h+'px';pg.style.backgroundColor=settings.paper;pg.style.transform=mobile?'none':'scale('+(settings.zoom/100)+')';pg.style.marginBottom=mobile?'0px':((settings.zoom/100-1)*h)+'px';
@@ -151,6 +167,10 @@ function filename(ext){const name=($('docName').value||'Untitled').trim().replac
 function exportHtml(){const serialized='<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>'+escapeXml($('docName').value)+'</title><style>body{background:#e9edf3;margin:0;padding:28px}article{box-sizing:border-box;margin:auto;max-width:850px;min-height:900px;background:'+settings.paper+';padding:'+getMargin()+'px;font-family:'+settings.font+';font-size:'+settings.fontSize+'px;line-height:'+settings.line+';letter-spacing:'+settings.letterSpacing+'px;word-spacing:'+settings.wordSpacing+'px;font-weight:'+settings.fontWeight+';text-align:'+settings.align+';color:'+settings.color+';overflow-wrap:anywhere}article p{text-indent:'+settings.firstIndent+'px;margin-bottom:'+settings.paragraphSpace+'em}article h1,article h2,article h3{color:'+settings.headingColor+'}table{border-collapse:collapse;width:100%}th,td{border:1px solid #aab8c8;padding:8px}blockquote{border-left:4px solid #98b2d3;padding-left:15px}article [data-supra-page-break=true]{break-before:page;page-break-before:always;min-height:15px;border-top:2px dashed #85a5c5;margin:15px 0}@media print{article [data-supra-page-break=true]{border:0;min-height:0;margin:0} } @media print{body{padding:0;background:#fff}article{padding:0;max-width:none;min-height:0}@page{size:'+settings.size+' '+settings.orientation+';margin:'+(getMargin()/96)+'in}}</style></head><body><article>'+sanitizeMarkup(doc.innerHTML)+'</article></body></html>';
  void download(serialized,filename('html'),'text/html;charset=utf-8');if(!window.SUPRADesktop)toast('HTML file saved');}
 function exportText(){void download(doc.innerText,filename('txt'),'text/plain;charset=utf-8');if(!window.SUPRADesktop)toast('Text file saved');}
+function exportMarkdown(){if(!window.SUPRAWriterUniversal){toast('Markdown module unavailable');return;}
+ void download(window.SUPRAWriterUniversal.htmlToMarkdown(doc),filename('md'),'text/markdown;charset=utf-8');
+ if(!window.SUPRADesktop)toast('Basic Markdown (.md) saved · complex formatting may simplify');
+}
 // ZIP writer: store-only ZIP archives, CRC32 and central directory. No third-party dependency.
 const enc=new TextEncoder(); const dec=new TextDecoder();
 const crcTable=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
@@ -226,7 +246,9 @@ async function importDocx(blob){const zip=await unzipFiles(blob);if(!zip['word/d
  closeList();loadHtml(html,blob.name.replace(/\.docx$/i,''));const pg=descendant(body,'pgSz'),mar=descendant(body,'pgMar');if(pg){const w=Number(attr(pg,'w')),h=Number(attr(pg,'h'));settings.orientation=w>h?'landscape':'portrait';settings.size=Math.min(w,h)>12000?'letter':Math.abs(Math.min(w,h)-11906)<200?'a4':'letter';}
  if(mar){const v=Number(attr(mar,'left'))/15;settings.margin=v<60?'narrow':v>104?'wide':'normal';}
  updatePreview();store();toast('Word document opened · complex layouts may be simplified');}
-async function openFile(file){if(!file)return;const name=file.name.replace(/\.[^.]+$/,'');const ext=file.name.split('.').pop().toLowerCase();try{if(file.size>25*1024*1024)throw Error('Please use a file smaller than 25 MB');if(ext==='docx')await importDocx(file);else if(['html','htm'].includes(ext)){const raw=await file.text();const parser=new DOMParser().parseFromString(raw,'text/html');loadHtml(parser.body.innerHTML,name);toast('HTML document opened');}else if(ext==='txt'){loadHtml(textToHtml(await file.text()),name);toast('Text document opened');}else throw Error('Choose a .docx, .html, or .txt file');}catch(err){toast('Open failed: '+err.message);}}
+async function openFile(file){if(!file)return;const name=file.name.replace(/\.[^.]+$/,'');const ext=file.name.split('.').pop().toLowerCase();try{if(file.size>25*1024*1024)throw Error('Please use a file smaller than 25 MB');if(ext==='docx')await importDocx(file);else if(['html','htm'].includes(ext)){const raw=await file.text();const parser=new DOMParser().parseFromString(raw,'text/html');loadHtml(parser.body.innerHTML,name);toast('HTML document opened');}else if(ext==='txt'){loadHtml(textToHtml(await file.text()),name);toast('Text document opened');}
+ else if(ext==='md'||ext==='markdown'){if(!window.SUPRAWriterUniversal)throw Error('Markdown module unavailable');loadHtml(window.SUPRAWriterUniversal.markdownToHtml(await file.text()),name);toast('Basic Markdown document opened');}
+ else throw Error('Supported: .docx, .html, .txt, .md, .markdown');}catch(err){toast('Open failed: '+err.message);}}
 // Find and replace within individual text runs, preserving surrounding HTML formatting.
 function showFindBar(replace=false){
  $('findBar').hidden=false;$('replaceText').parentElement.hidden=!replace;
@@ -334,18 +356,23 @@ function wire(){
  $('addLink').addEventListener('mousedown',e=>e.preventDefault());$('addLink').addEventListener('click',addLink);
  $('addTable').addEventListener('mousedown',e=>e.preventDefault());$('addTable').addEventListener('click',addTable);
  $('addPageBreak').addEventListener('mousedown',e=>e.preventDefault());$('addPageBreak').addEventListener('click',addPageBreak);
- $('undoBtn').addEventListener('click',()=>command('undo'));$('redoBtn').addEventListener('click',()=>command('redo'));$('saveNowBtn').addEventListener('click',()=>{clearTimeout(saveTimer);store();toast('Saved to this device');});
+ $('undoBtn').addEventListener('click',()=>command('undo'));$('redoBtn').addEventListener('click',()=>command('redo'));$('saveNowBtn').addEventListener('click',()=>{if(store())toast('Saved to this device');else toast('Local save failed — use Save file');});
  $('docName').addEventListener('input',queueSave);doc.addEventListener('input',queueSave);doc.addEventListener('keyup',saveSelection);doc.addEventListener('mouseup',saveSelection);doc.addEventListener('focusout',saveSelection);
+ doc.addEventListener('focusout',flushAutosave);
+ $('docName').addEventListener('blur',flushAutosave);
  doc.addEventListener('paste',e=>{const html=e.clipboardData?.getData('text/html');const txt=e.clipboardData?.getData('text/plain');if(html||txt){e.preventDefault();insertHtml(html?html:textToHtml(txt));}});
  $('saveMenuBtn').addEventListener('click',()=>{let open=$('saveMenu').hidden;$('saveMenu').hidden=!open;$('saveMenuBtn').setAttribute('aria-expanded',open?'true':'false');});
- document.querySelectorAll('[data-export]').forEach(b=>b.addEventListener('click',()=>{const type=b.dataset.export;$('saveMenu').hidden=true;$('saveMenuBtn').setAttribute('aria-expanded','false');if(type==='docx')exportDocx();if(type==='html')exportHtml();if(type==='txt')exportText();}));
+ document.querySelectorAll('[data-export]').forEach(b=>b.addEventListener('click',()=>{const type=b.dataset.export;$('saveMenu').hidden=true;$('saveMenuBtn').setAttribute('aria-expanded','false');if(type==='docx')exportDocx();if(type==='html')exportHtml();if(type==='txt')exportText();if(type==='md')exportMarkdown();}));
  document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrap')){$('saveMenu').hidden=true;$('saveMenuBtn').setAttribute('aria-expanded','false');}});
  $('newBtn').addEventListener('click',beginNew);$('openBtn').addEventListener('click',()=>{if(window.SUPRADesktop)void openFromWindows();else $('openFile').click();});$('openFile').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';await openFile(file);});$('printBtn').addEventListener('click',printDocument);
  $('helpBtn').addEventListener('click',()=>$('modal').hidden=false);$('closeModal').addEventListener('click',()=>$('modal').hidden=true);$('modal').addEventListener('click',e=>{if(e.target.id==='modal')$('modal').hidden=true;});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('modal').hidden=true;$('symbolsModal').hidden=true;$('findBar').hidden=true;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'){e.preventDefault();showFindBar(false);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='h'){e.preventDefault();showFindBar(true);}if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();addPageBreak();return;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(e.shiftKey)forceDesktopSaveAs=true;exportDocx();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='p'){e.preventDefault();printDocument();}});
- window.addEventListener('beforeunload',store);window.addEventListener('resize',updatePreview);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushAutosave();});
+ window.addEventListener('pagehide',flushAutosave);
+ window.addEventListener('beforeunload',flushAutosave);
+ window.addEventListener('resize',updatePreview);
 }
 wire();wireFind();wireWindowsHost();loadSavedLooks();loadPrevious();updatePreview();updateCounts();
 // Expose a small API solely for repeatable local QA checks.
-window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=>({...settings}),wordCount:()=>Number(($('wordCount').textContent||'').split(' ')[0]),readHtml:()=>doc.innerHTML, fontCount:()=>fontItems.length, symbols:()=>symbolSet.map(s=>s[0]), applyAdvanced:(id)=>applySettings(advancedPresets[id],id), importFont:loadFontFile, customLooks:()=>customLooks,addPageBreak};
+window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=>({...settings}),wordCount:()=>Number(($('wordCount').textContent||'').split(' ')[0]),readHtml:()=>doc.innerHTML, fontCount:()=>fontItems.length, symbols:()=>symbolSet.map(s=>s[0]), applyAdvanced:(id)=>applySettings(advancedPresets[id],id), importFont:loadFontFile, customLooks:()=>customLooks,addPageBreak,autosave:()=>({idleMs:AUTOSAVE_IDLE_MS,maxMs:AUTOSAVE_MAX_MS,pending:unsavedChanges}),flushAutosave};
 })();
