@@ -5,9 +5,17 @@ const $ = id => document.getElementById(id);
 const doc = $('document');
 const defaults = {font:"Arial, Helvetica, sans-serif",fontSize:15,line:1.65,color:'#1c2938',paper:'#ffffff',size:'letter',margin:'normal',orientation:'portrait',zoom:100,letterSpacing:0,wordSpacing:0,fontWeight:400,paragraphSpace:1.05,firstIndent:0,marginCustom:90,headingColor:'#263f60',align:'left'};
 let settings = {...defaults}; let savedRange = null; let saveTimer = null; let maxSaveTimer = null; let toastTimer = null;
-const AUTOSAVE_IDLE_MS = 120; // Save shortly after input settles; do not block typing on every keystroke.
-const AUTOSAVE_MAX_MS = 1000; // Continuous typing still checkpoints at least once each second.
+const AUTOSAVE_IDLE_MS = 50; // Small documents: only 50 ms after the last edit.
+const AUTOSAVE_MEDIUM_MS = 120; // Medium documents: keep typing responsive.
+const AUTOSAVE_LARGE_MS = 300; // Large documents: avoid excessive full-document writes.
+const AUTOSAVE_MAX_MS = 1000; // Continuous typing: aim for one checkpoint per second.
+let lastSavedDocumentSize = 0;
 let unsavedChanges = false;
+function autosaveIdleDelay(){
+ if(lastSavedDocumentSize >= 500000)return AUTOSAVE_LARGE_MS;
+ if(lastSavedDocumentSize >= 100000)return AUTOSAVE_MEDIUM_MS;
+ return AUTOSAVE_IDLE_MS;
+}
 const dims = {letter:[816,1056],a4:[794,1123]};
 const margins = {narrow:37,normal:90,wide:120};
 const getMargin = () => settings.margin==='custom'?Math.max(20,Math.min(160,Number(settings.marginCustom)||90)):(margins[settings.margin]||90);
@@ -86,7 +94,9 @@ function updateCounts(){const txt=doc.innerText||doc.textContent||'';const words
 function store(){
  clearTimeout(saveTimer);saveTimer=null;clearTimeout(maxSaveTimer);maxSaveTimer=null;
  try{
-  localStorage.setItem('supra-writer-v02',JSON.stringify({html:doc.innerHTML,name:$('docName').value,settings}));
+  const html=doc.innerHTML;
+  localStorage.setItem('supra-writer-v02',JSON.stringify({html,name:$('docName').value,settings}));
+  lastSavedDocumentSize=html.length;
   unsavedChanges=false;status('✓ Autosaved on this device');updateCounts();return true;
  }catch(err){
   unsavedChanges=true;status('Autosave unavailable — use Save file');updateCounts();return false;
@@ -94,7 +104,7 @@ function store(){
 }
 function queueSave(){
  unsavedChanges=true;status('Saving…');
- clearTimeout(saveTimer);saveTimer=setTimeout(store,AUTOSAVE_IDLE_MS);
+ clearTimeout(saveTimer);saveTimer=setTimeout(store,autosaveIdleDelay());
  if(maxSaveTimer===null)maxSaveTimer=setTimeout(store,AUTOSAVE_MAX_MS);
 }
 function flushAutosave(){if(unsavedChanges)store();}
@@ -374,5 +384,5 @@ function wire(){
 }
 wire();wireFind();wireWindowsHost();loadSavedLooks();loadPrevious();updatePreview();updateCounts();
 // Expose a small API solely for repeatable local QA checks.
-window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=>({...settings}),wordCount:()=>Number(($('wordCount').textContent||'').split(' ')[0]),readHtml:()=>doc.innerHTML, fontCount:()=>fontItems.length, symbols:()=>symbolSet.map(s=>s[0]), applyAdvanced:(id)=>applySettings(advancedPresets[id],id), importFont:loadFontFile, customLooks:()=>customLooks,addPageBreak,autosave:()=>({idleMs:AUTOSAVE_IDLE_MS,maxMs:AUTOSAVE_MAX_MS,pending:unsavedChanges}),flushAutosave};
+window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=>({...settings}),wordCount:()=>Number(($('wordCount').textContent||'').split(' ')[0]),readHtml:()=>doc.innerHTML, fontCount:()=>fontItems.length, symbols:()=>symbolSet.map(s=>s[0]), applyAdvanced:(id)=>applySettings(advancedPresets[id],id), importFont:loadFontFile, customLooks:()=>customLooks,addPageBreak,autosave:()=>({idleMs:autosaveIdleDelay(),smallMs:AUTOSAVE_IDLE_MS,mediumMs:AUTOSAVE_MEDIUM_MS,largeMs:AUTOSAVE_LARGE_MS,maxMs:AUTOSAVE_MAX_MS,pending:unsavedChanges}),flushAutosave};
 })();
