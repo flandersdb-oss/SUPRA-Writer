@@ -20,6 +20,12 @@ Browser regression tests cover mode switching, autosaved content preservation, b
 - Browser storage errors are surfaced instead of claiming successful saves.
 - This interval improvement is a configuration measurement, **not a benchmark of actual storage latency**; typing performance depends on document size and device.
 
+## Expanded font discovery and Markdown
+- 174 catalogue font names (formerly 162), including Papyrus plus 12 additional creative, multilingual and variable-font candidates. **No new font binaries are bundled**, and proprietary Papyrus is not redistributed.
+- A one-click Papyrus finder and explicit installed-vs-listed-vs-session-loaded font status.
+- Basic Markdown now recognizes both CommonMark-style backtick and tilde fenced code and preserves safe PRE/CODE blocks on import. Full GFM/Markdown parity is not claimed.
+- See docs/WRITER_FONTS_FORMATS_SPEED_AUDIT.md for format support and high-priority missing editing capabilities.
+
 ## Adaptive autosave + recovery
 - Small files save after 50 ms of idle time (58.3% less than the previous 120 ms, 12× shorter than the original 600 ms).
 - 100k+ HTML-character files use 120 ms and 500k+ use 300 ms, avoiding extra full-document serialization on every key.
