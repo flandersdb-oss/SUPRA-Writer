@@ -13,3 +13,9 @@ No universal format engine: ODT, RTF, legacy binary DOC, Apple Pages, WordPerfec
 
 ## Testing and safety
 Browser regression tests cover mode switching, autosaved content preservation, basic Markdown input/output, and unsafe raw HTML escaping. Windows packaging and CodeQL must pass on the exact release candidate. Keep source copies and export backups of valuable files; this is an unsigned alpha.
+
+## Faster autosave in Writer
+- Local draft autosave now uses a 120 ms idle delay rather than 600 ms, reducing its configured quiet-period interval by **80%**.
+- A 1-second maximum interval allows checkpoints during continuous typing; editor blur, page hide and tab backgrounding flush pending changes immediately.
+- Browser storage errors are surfaced instead of claiming successful saves.
+- This interval improvement is a configuration measurement, **not a benchmark of actual storage latency**; typing performance depends on document size and device.

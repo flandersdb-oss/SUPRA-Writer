@@ -1,7 +1,7 @@
 # SUPRA Office Autosave, Undo and Redo — Alpha
 
 ## Shared interaction
-- **Writer:** Browser local storage autosaves document content after approximately 600 ms. Visible Undo / Redo are the editor's native text-edit history, and Save now writes the local draft immediately. **Undo look** remains a separate control for appearance presets.
+- **Writer:** Browser local storage saves after 120 ms of idle time, with a maximum 1-second gap even during continuous typing. It also flushes pending changes immediately on focus loss, when the tab becomes hidden, on pagehide and beforeunload. Visible Undo / Redo are the editor's native text-edit history, and Save now writes the local draft immediately. **Undo look** remains a separate control for appearance presets.
 - **Sheets:** Automatically saves whenever a cell changes (including while typing), when the sheet name changes, or when a workflow/import is applied. Undo and Redo restore up to 40 committed snapshots. Typing within a single focused cell is grouped into one snapshot.
 - **Present:** Autosaves text while typing, slide reordering/add/delete, template application, theme, and deck name. Undo/Redo restore up to 40 snapshots. Typing in a single focused text field is grouped into one snapshot.
 
