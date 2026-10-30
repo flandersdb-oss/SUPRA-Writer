@@ -20,7 +20,7 @@ function markdownToHtml(t){
  const out=[];let list='',code=null;
  function close(){if(list){out.push('</'+list+'>');list='';}}
  for(const line of t.replace(/\r\n?/g,'\n').split('\n')){
-  if(line.startsWith('~~~')){if(code!==null){out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');code=null;}else{close();code=[];}continue;}
+  if(line.startsWith('~~~')||line.startsWith(String.fromCharCode(96).repeat(3))){if(code!==null){out.push('<pre><code>'+esc(code.join('\n'))+'</code></pre>');code=null;}else{close();code=[];}continue;}
   if(code!==null){code.push(line);continue;}
   if(!line.trim()){close();continue;}
   const h=line.match(/^(#{1,6})\s+(.+)$/),q=line.match(/^>\s?(.*)$/),ul=line.match(/^\s*[-+*]\s+(.+)$/),ol=line.match(/^\s*\d+[.)]\s+(.+)$/);
