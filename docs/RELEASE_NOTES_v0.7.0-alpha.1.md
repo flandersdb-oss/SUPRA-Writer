@@ -34,3 +34,10 @@ Browser regression tests cover mode switching, autosaved content preservation, b
 
 - Routine localStorage writes are throttled to at most roughly 3–4 per second (300 ms spacing), so fast typing does not create an expensive full-document save for every key. Immediate explicit/focus-loss saves bypass the routine throttle.
 - Deterministic timing tests verify the adaptive scheduler; full browser and packaged-Windows tests remain the release gates.
+
+## Universal Windows document discovery
+- Added **Documents** interface: one-time folder approval, automatic subsequent scan, search/filter, direct open for native extensions, and Forget access.
+- Scan is read-only and local; up to 10 folders, 5,000 matching files, 8 levels, no hidden or symlink traversal. It recognizes 6 native-reader extensions and 18 converter-candidate extensions.
+- Potential adapters: optional LibreOffice/Pandoc. The UI can open their official download/help pages on deliberate user action. **No automatic download, installation, execution, or file conversion is implemented.**
+- Opening a found document asks before replacing the current editor content and attempts a local recovery snapshot.
+- Read [Universal Document Discovery](UNIVERSAL_DOCUMENT_DISCOVERY.md) for exact boundaries, limitations and test gates.

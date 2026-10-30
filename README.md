@@ -12,9 +12,13 @@ See [Windows Desktop guide](docs/WINDOWS_DESKTOP.md). A GitHub Actions workflow 
 - [Design system](docs/BRAND_SYSTEM.md) — provisional cross-platform icon family.
 - [Alpha release notes](docs/RELEASE_NOTES_v0.7.0-alpha.1.md).
 
-> Current published alpha remains v0.5 until this v0.6 candidate passes CI and is released. Windows v0.6 includes Writer Visual Setup; Sheets and Present remain browser-only prototypes.
+> **Current public release: v0.6.0-alpha.1.** v0.7 remains a development candidate. Sheets and Present are browser-only prototypes.
 
 [Fonts, file formats and speed audit](docs/WRITER_FONTS_FORMATS_SPEED_AUDIT.md) documents all 174 font names, Papyrus search, installed-font checks, Markdown boundaries and universal format priorities.
+
+## Windows Universal document discovery (development preview)
+
+After choosing folders on first launch, Windows Writer can automatically rescan those approved locations, showing readable documents and files requiring optional conversion. It does **not** scan without permission or install converter programs. Openable files use the existing secure editor import path. [Discovery privacy and supported formats](docs/UNIVERSAL_DOCUMENT_DISCOVERY.md).
 
 ## Writer editions (development preview)
 
