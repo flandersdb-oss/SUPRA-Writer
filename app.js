@@ -97,7 +97,9 @@ function store(){
   const html=doc.innerHTML;
   localStorage.setItem('supra-writer-v02',JSON.stringify({html,name:$('docName').value,settings}));
   lastSavedDocumentSize=html.length;
-  unsavedChanges=false;status('✓ Autosaved on this device');updateCounts();return true;
+  unsavedChanges=false;status('✓ Autosaved on this device');updateCounts();
+  document.dispatchEvent(new CustomEvent('supra:writer:saved',{detail:{html,name:$('docName').value,settings:{...settings}}}));
+  return true;
  }catch(err){
   unsavedChanges=true;status('Autosave unavailable — use Save file');updateCounts();return false;
  }
@@ -384,5 +386,9 @@ function wire(){
 }
 wire();wireFind();wireWindowsHost();loadSavedLooks();loadPrevious();updatePreview();updateCounts();
 // Expose a small API solely for repeatable local QA checks.
-window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=>({...settings}),wordCount:()=>Number(($('wordCount').textContent||'').split(' ')[0]),readHtml:()=>doc.innerHTML, fontCount:()=>fontItems.length, symbols:()=>symbolSet.map(s=>s[0]), applyAdvanced:(id)=>applySettings(advancedPresets[id],id), importFont:loadFontFile, customLooks:()=>customLooks,addPageBreak,autosave:()=>({idleMs:autosaveIdleDelay(),smallMs:AUTOSAVE_IDLE_MS,mediumMs:AUTOSAVE_MEDIUM_MS,largeMs:AUTOSAVE_LARGE_MS,maxMs:AUTOSAVE_MAX_MS,pending:unsavedChanges}),flushAutosave};
+window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=>({...settings}),wordCount:()=>Number(($('wordCount').textContent||'').split(' ')[0]),readHtml:()=>doc.innerHTML, fontCount:()=>fontItems.length, symbols:()=>symbolSet.map(s=>s[0]), applyAdvanced:(id)=>applySettings(advancedPresets[id],id), importFont:loadFontFile, customLooks:()=>customLooks,addPageBreak,restoreSnapshot:(entry)=>{
+ if(!entry||typeof entry.html!=='string'||entry.html.length>1200000)return false;
+ if(entry.settings&&typeof entry.settings==='object')settings={...defaults,...entry.settings};
+ updatePreview();loadHtml(entry.html,typeof entry.name==='string'?entry.name:'Recovered');return true;
+},autosave:()=>({idleMs:autosaveIdleDelay(),smallMs:AUTOSAVE_IDLE_MS,mediumMs:AUTOSAVE_MEDIUM_MS,largeMs:AUTOSAVE_LARGE_MS,maxMs:AUTOSAVE_MAX_MS,pending:unsavedChanges}),flushAutosave};
 })();
