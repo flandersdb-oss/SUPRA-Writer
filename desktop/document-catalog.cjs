@@ -5,6 +5,13 @@ const path=require('node:path');
 const READABLE=new Set(['.docx','.html','.htm','.txt','.md','.markdown']);
 const OPTIONAL=new Set(['.odt','.fodt','.rtf','.doc','.docm','.pages','.wpd','.abw','.wps','.tex','.epub','.pdf','.sxw','.ott','.xml','.rst','.org','.asciidoc']);
 const MAX_ITEMS=5000,MAX_DEPTH=8,MAX_ROOTS=10,MAX_OPEN_BYTES=25*1024*1024;
+const PANDOC_FORMATS=new Set(['.tex','.epub','.rst','.org','.asciidoc']);
+const LIBREOFFICE_FORMATS=new Set(['.odt','.fodt','.rtf','.doc','.wpd','.abw','.wps','.sxw','.ott']);
+function adapterFor(extension){
+ if(PANDOC_FORMATS.has(extension))return 'pandoc';
+ if(LIBREOFFICE_FORMATS.has(extension))return 'libreoffice';
+ return null;
+}
 function classify(name){
  const ext=path.extname(name).toLowerCase();
  return {extension:ext,kind:READABLE.has(ext)?'readable':OPTIONAL.has(ext)?'converter-needed':null};
@@ -40,7 +47,7 @@ async function scanRoots(paths,options={}){
     const item={
      id:String(results.length+1),name:e.name,
      folder:path.basename(root),relative:path.relative(root,full),
-     extension:type.extension,kind:type.kind,
+     extension:type.extension,kind:type.kind,adapter:adapterFor(type.extension),
      canOpen:type.kind==='readable'&&stat.size<=MAX_OPEN_BYTES,
      bytes:stat.size,modified:stat.mtimeMs
     };
@@ -63,4 +70,4 @@ async function verifyIndexedFile(entry){
  if(!READABLE.has(path.extname(real).toLowerCase()))throw Error('A converter is required for this file type');
  return real;
 }
-module.exports={READABLE,OPTIONAL,MAX_ITEMS,MAX_DEPTH,MAX_ROOTS,MAX_OPEN_BYTES,classify,scanRoots,verifyIndexedFile,inside};
+module.exports={READABLE,OPTIONAL,MAX_ITEMS,MAX_DEPTH,MAX_ROOTS,MAX_OPEN_BYTES,classify,adapterFor,scanRoots,verifyIndexedFile,inside};
