@@ -39,7 +39,7 @@ test('Fast/Universal Writer preserve one document and safely handle Markdown', {
  assert.match(await page.locator('#supraFormatRows').innerText(),/ODF/);
  await page.locator('#supraCloseFormats').click();
  assert.match(await page.locator('#document').innerText(),/My work remains unchanged/);
- const markdown='# First heading\n\nA **bold** line\n\n- One\n- Two\n\n<script>alert("NO")</script>';
+ const markdown='# First heading\n\nA **bold** line\n\n- One\n- Two\n\n\`\`\`js\nconst safe = "<script>";\n\`\`\`\n\n<script>alert("NO")</script>';
  const html=await page.evaluate(m=>SUPRAWriterUniversal.markdownToHtml(m),markdown);
  assert.match(html,/<h1>First heading<\/h1>/);
  assert.match(html,/<strong>bold<\/strong>/);
@@ -53,6 +53,7 @@ test('Fast/Universal Writer preserve one document and safely handle Markdown', {
  await page.locator('#openFile').setInputFiles({name:'example.md',mimeType:'text/markdown',buffer:Buffer.from(markdown)});
  await page.waitForFunction(()=>document.getElementById('document')?.innerText.includes('First heading'));
  assert.match(await page.locator('#document').innerText(),/First heading/);
+ assert.equal(await page.locator('#document pre code').count(),1,'Fenced Markdown code survives editor sanitization');
  const download=page.waitForEvent('download');
  await page.locator('#saveMenuBtn').click();await page.locator('[data-export="md"]').click();
  const asset=await download;
