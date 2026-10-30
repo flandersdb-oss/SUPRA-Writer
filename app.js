@@ -9,6 +9,8 @@ const AUTOSAVE_IDLE_MS = 50; // Small documents: only 50 ms after the last edit.
 const AUTOSAVE_MEDIUM_MS = 120; // Medium documents: keep typing responsive.
 const AUTOSAVE_LARGE_MS = 300; // Large documents: avoid excessive full-document writes.
 const AUTOSAVE_MAX_MS = 1000; // Continuous typing: aim for one checkpoint per second.
+const AUTOSAVE_MIN_GAP_MS = 300; // Avoid repeated synchronous writes while typing rapidly.
+let lastSavedAt = 0;
 let lastSavedDocumentSize = 0;
 let unsavedChanges = false;
 function autosaveIdleDelay(){
@@ -96,7 +98,7 @@ function store(){
  try{
   const html=doc.innerHTML;
   localStorage.setItem('supra-writer-v02',JSON.stringify({html,name:$('docName').value,settings}));
-  lastSavedDocumentSize=html.length;
+  lastSavedDocumentSize=html.length;lastSavedAt=Date.now();
   unsavedChanges=false;status('✓ Autosaved on this device');updateCounts();
   document.dispatchEvent(new CustomEvent('supra:writer:saved',{detail:{html,name:$('docName').value,settings:{...settings}}}));
   return true;
@@ -106,7 +108,9 @@ function store(){
 }
 function queueSave(){
  unsavedChanges=true;status('Saving…');
- clearTimeout(saveTimer);saveTimer=setTimeout(store,autosaveIdleDelay());
+ clearTimeout(saveTimer);
+ const gap=lastSavedAt ? Math.max(0,AUTOSAVE_MIN_GAP_MS-(Date.now()-lastSavedAt)) : 0;
+ saveTimer=setTimeout(store,Math.max(autosaveIdleDelay(),gap));
  if(maxSaveTimer===null)maxSaveTimer=setTimeout(store,AUTOSAVE_MAX_MS);
 }
 function flushAutosave(){if(unsavedChanges)store();}
@@ -390,5 +394,5 @@ window.SUPRAWriterTest={generateDocx,zipFiles,unzipFiles,importDocx,settings:()=
  if(!entry||typeof entry.html!=='string'||entry.html.length>1200000)return false;
  if(entry.settings&&typeof entry.settings==='object')settings={...defaults,...entry.settings};
  updatePreview();loadHtml(entry.html,typeof entry.name==='string'?entry.name:'Recovered');return true;
-},autosave:()=>({idleMs:autosaveIdleDelay(),smallMs:AUTOSAVE_IDLE_MS,mediumMs:AUTOSAVE_MEDIUM_MS,largeMs:AUTOSAVE_LARGE_MS,maxMs:AUTOSAVE_MAX_MS,pending:unsavedChanges}),flushAutosave};
+},autosave:()=>({idleMs:autosaveIdleDelay(),smallMs:AUTOSAVE_IDLE_MS,mediumMs:AUTOSAVE_MEDIUM_MS,largeMs:AUTOSAVE_LARGE_MS,minGapMs:AUTOSAVE_MIN_GAP_MS,maxMs:AUTOSAVE_MAX_MS,pending:unsavedChanges}),flushAutosave};
 })();
