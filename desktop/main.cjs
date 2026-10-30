@@ -4,6 +4,7 @@ const {app, BrowserWindow, ipcMain, dialog, Menu, shell, protocol, net, session}
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
+const catalog = require('./document-catalog.cjs');
 
 const ALLOWED_EXTENSIONS = new Set(['.docx','.html','.txt','.md','.markdown']);
 const MAX_BYTES = 25 * 1024 * 1024;
@@ -11,6 +12,25 @@ const ROOT = path.resolve(__dirname, '..');
 let window = null;
 let currentFile = null;
 let openingPath = null;
+let catalogIndex = new Map();
+const catalogConfigPath=()=>path.join(app.getPath('userData'),'document-discovery.json');
+async function readCatalogConfig(){
+ try{
+  const obj=JSON.parse(await fs.readFile(catalogConfigPath(),'utf8'));
+  if(obj.version===1&&obj.approved===true&&Array.isArray(obj.folders))
+   return {approved:true,folders:obj.folders.filter(x=>typeof x==='string'&&path.isAbsolute(x)).slice(0,catalog.MAX_ROOTS)};
+ }catch{}
+ return {approved:false,folders:[]};
+}
+async function catalogScan(){
+ const config=await readCatalogConfig();
+ if(!config.approved)return {approved:false,items:[],examined:0,truncated:false};
+ const result=await catalog.scanRoots(config.folders);
+ catalogIndex=new Map(result.items.map(entry=>[entry.item.id,entry]));
+ return {approved:true,folders:config.folders.map(p=>path.basename(p)),items:result.items.map(x=>x.item),
+  examined:result.examined,skipped:result.skipped,truncated:result.truncated,
+  maxItems:result.maxItems,maxDepth:result.maxDepth};
+}
 
 protocol.registerSchemesAsPrivileged([{scheme:'supra',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const isSafeExtension = p => ALLOWED_EXTENSIONS.has(path.extname(p).toLowerCase());
@@ -128,6 +148,42 @@ function wireIpc() {
     return {saved:true,fileName:path.basename(out.filePath)};
   });
   ipcMain.handle('document:reset',event=>{targetWindow(event);currentFile=null;window.setTitle('SUPRA Writer — Windows');return true;});
+  ipcMain.handle('catalog:status',async event=>{
+   targetWindow(event);
+   const c=await readCatalogConfig();
+   return {approved:c.approved,folders:c.folders.map(p=>path.basename(p)),maxItems:catalog.MAX_ITEMS,maxDepth:catalog.MAX_DEPTH};
+  });
+  ipcMain.handle('catalog:choose',async event=>{
+   const win=targetWindow(event);
+   const out=await dialog.showOpenDialog(win,{
+    title:'Choose folders for read-only document discovery',
+    buttonLabel:'Allow scanning selected folders',
+    properties:['openDirectory','multiSelections']
+   });
+   if(out.canceled||!out.filePaths.length)return {canceled:true};
+   const approved=[];
+   for(const p of out.filePaths.slice(0,catalog.MAX_ROOTS)){
+    try{const real=await fs.realpath(p);if((await fs.stat(real)).isDirectory()&&!approved.includes(real))approved.push(real);}catch{}
+   }
+   if(!approved.length)throw Error('No readable folders selected');
+   await fs.writeFile(catalogConfigPath(),JSON.stringify({version:1,approved:true,folders:approved}),{mode:0o600});
+   catalogIndex.clear();
+   return catalogScan();
+  });
+  ipcMain.handle('catalog:scan',async event=>{targetWindow(event);return catalogScan();});
+  ipcMain.handle('catalog:forget',async event=>{
+   targetWindow(event);catalogIndex.clear();
+   await fs.rm(catalogConfigPath(),{force:true});
+   return {approved:false,items:[]};
+  });
+  ipcMain.handle('catalog:open',async (event,id)=>{
+   targetWindow(event);
+   if(typeof id!=='string'||!/^[1-9]\\d{0,5}$/.test(id))throw Error('Invalid document identifier');
+   const entry=catalogIndex.get(id);
+   if(!entry||!entry.item.canOpen)throw Error('This document requires a verified converter');
+   const verified=await catalog.verifyIndexedFile(entry);
+   return readDocument(verified);
+  });
 }
 if(!app.requestSingleInstanceLock())app.quit();
 else {
