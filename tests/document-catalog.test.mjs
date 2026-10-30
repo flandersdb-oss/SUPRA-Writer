@@ -31,6 +31,10 @@ test('Universal discovery enumerates readable and conversion-needed documents wi
  assert.equal(result.items.filter(x=>x.item.canOpen).length,3);
  assert.ok(result.items.every(x=>!Object.hasOwn(x.item,'path')),'renderer metadata excludes absolute filesystem paths');
  assert.equal(result.items.find(x=>x.item.name==='old.doc').item.kind,'converter-needed');
+ assert.equal(result.items.find(x=>x.item.name==='old.doc').item.adapter,'libreoffice');
+ assert.equal(result.items.find(x=>x.item.name==='report.odt').item.adapter,'libreoffice');
+ assert.equal(catalog.adapterFor('.tex'),'pandoc');
+ assert.equal(catalog.adapterFor('.docm'),null);
  assert.equal(result.items.find(x=>x.item.name==='page.htm').item.kind,'readable');
  const open=await catalog.verifyIndexedFile(result.items.find(x=>x.item.name==='letter.docx'));
  assert.equal(open,path.join(docs,'letter.docx'));
@@ -56,6 +60,10 @@ test('Windows desktop exposes consent-scoped API and never installs converters s
  assert.match(src,/verifyIndexedFile/);
  assert.match(preload,/catalogChoose/);
  assert.match(preload,/catalogForget/);
+ assert.match(preload,/catalogAdapterSource/);
+ assert.match(src,/catalog:adapter-source/);
+ assert.match(src,/www\.libreoffice\.org/);
+ assert.match(src,/pandoc\.org/);
  assert.match(renderer,/first-launch|intro|read-only/i);
  assert.doesNotMatch(renderer,/child_process|eval\(|fetch\(/i);
 });
