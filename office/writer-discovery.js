@@ -20,9 +20,15 @@ function render(){
   const row=document.createElement('li'),info=document.createElement('span'),name=document.createElement('strong'),details=document.createElement('small'),action=document.createElement('button');
   name.textContent=item.name;
   details.textContent=item.folder+' / '+item.relative+' · '+Math.round(item.bytes/1024)+' KiB';
-  info.append(name,details);action.textContent=item.canOpen?'Open':'Needs converter';
+  info.append(name,details);action.textContent=item.canOpen?'Open':item.adapter?'Get '+(item.adapter==='pandoc'?'Pandoc':'LibreOffice'):'Unavailable';
   action.addEventListener('click',async()=>{
-   if(!item.canOpen){$('catalogAdvice').textContent=item.extension+' is not supported for direct editing, or exceeds 25 MB. A verified converter will be needed. Your original file is unchanged.';return;}
+   if(!item.canOpen){
+    if(item.adapter){
+     $('catalogAdvice').textContent='Opening the official '+(item.adapter==='pandoc'?'Pandoc':'LibreOffice')+' information page. Download and installation require your own approval. Conversion is not yet integrated.';
+     try{await api.catalogAdapterSource(item.adapter);}catch(error){$('catalogAdvice').textContent='Cannot open publisher site: '+error.message;}
+    }else $('catalogAdvice').textContent=item.extension+' has no verified automatic converter in this alpha. The original file is unchanged.';
+    return;
+   }
    try{
     const result=await api.catalogOpen(item.id);
     if(!window.SUPRAOpenDiscoveredFile)throw Error('Editor unavailable');
