@@ -6,7 +6,7 @@ const path = require('node:path');
 const {pathToFileURL} = require('node:url');
 const catalog = require('./document-catalog.cjs');
 
-const ALLOWED_EXTENSIONS = new Set(['.docx','.html','.txt','.md','.markdown']);
+const ALLOWED_EXTENSIONS = new Set(['.docx','.html','.htm','.txt','.md','.markdown']);
 const MAX_BYTES = 25 * 1024 * 1024;
 const ROOT = path.resolve(__dirname, '..');
 let window = null;
@@ -36,7 +36,7 @@ protocol.registerSchemesAsPrivileged([{scheme:'supra',privileges:{standard:true,
 const isSafeExtension = p => ALLOWED_EXTENSIONS.has(path.extname(p).toLowerCase());
 const files = [
   {name:'Word document',extensions:['docx']},
-  {name:'HTML document',extensions:['html']},
+  {name:'HTML document',extensions:['html','htm']},
   {name:'Plain text',extensions:['txt']},
   {name:'Markdown',extensions:['md','markdown']}
 ];
@@ -117,7 +117,7 @@ function safeBytes(bytes){
 function wireIpc() {
   ipcMain.handle('document:open',async event=>{
     const win=targetWindow(event);
-    const out=await dialog.showOpenDialog(win,{title:'Open a document',properties:['openFile'],filters:[{name:'Word, HTML, text or Markdown',extensions:['docx','html','txt','md','markdown']},...files]});
+    const out=await dialog.showOpenDialog(win,{title:'Open a document',properties:['openFile'],filters:[{name:'Word, HTML, text or Markdown',extensions:['docx','html','htm','txt','md','markdown']},...files]});
     if(out.canceled || !out.filePaths.length)return null;
     return readDocument(out.filePaths[0]);
   });
@@ -157,6 +157,7 @@ function wireIpc() {
    const win=targetWindow(event);
    const out=await dialog.showOpenDialog(win,{
     title:'Choose folders for read-only document discovery',
+    defaultPath:app.getPath('documents'),
     buttonLabel:'Allow scanning selected folders',
     properties:['openDirectory','multiSelections']
    });
