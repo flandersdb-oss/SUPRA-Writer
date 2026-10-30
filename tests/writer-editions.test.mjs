@@ -22,6 +22,15 @@ test('Fast/Universal Writer preserve one document and safely handle Markdown', {
  await page.locator('#supraFastMode').waitFor();
  assert.equal(await page.evaluate(()=>SUPRAWriterUniversal.mode()),'fast');
  assert.equal(await page.evaluate(()=>SUPRAWriterUniversal.formats().length),12);
+ assert.equal(await page.evaluate(()=>SUPRAWriterTest.fontCount),174);
+ await page.locator('[data-tab="text"]').click();
+ await page.locator('#findPapyrusBtn').click();
+ assert.equal(await page.locator('#fontSearch').inputValue(),'Papyrus');
+ assert.equal(await page.locator('#fontSelect option').count(),1);
+ await page.locator('#fontSelect').selectOption({label:'Papyrus'});
+ assert.match(await page.locator('#fontAvailability').innerText(),/not bundled|require installation/i);
+ await page.locator('[data-tab="quick"]').click();
+
  await page.locator('#document').fill('My work remains unchanged.');
  await page.locator('#saveNowBtn').click();
  await page.locator('#supraUniversalMode').click();
@@ -35,6 +44,9 @@ test('Fast/Universal Writer preserve one document and safely handle Markdown', {
  assert.match(html,/<h1>First heading<\/h1>/);
  assert.match(html,/<strong>bold<\/strong>/);
  assert.ok(!html.includes('<script>'));
+ const fenced=await page.evaluate(()=>SUPRAWriterUniversal.markdownToHtml('```js\nA <script>bad</script>\n```'));
+ assert.match(fenced,/<pre><code>/);
+ assert.ok(!fenced.includes('<script>'));
  const raw=await page.evaluate(()=>SUPRAWriterUniversal.htmlToMarkdown(document.getElementById('document')));
  assert.match(raw,/My work remains unchanged/);
  // Open the new .md format through the actual Editor input handler.
