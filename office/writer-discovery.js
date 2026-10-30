@@ -81,7 +81,7 @@ modal.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();mod
  try{
   const state=await api.catalogStatus();
   approved=!!state.approved;$('catalogForget').disabled=!approved;$('catalogRescan').disabled=!approved;
-  if(approved)await invoke('catalogScan');
+  if(approved){status('Approved folders will be rescanned after the editor opens.');setTimeout(()=>{void invoke('catalogScan');},800);}
   else{
    status('Choose folders to allow read-only scanning.');
    if(!localStorage.getItem('supra-writer-catalog-intro')){localStorage.setItem('supra-writer-catalog-intro','1');modal.hidden=false;}
