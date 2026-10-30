@@ -25,3 +25,6 @@ Browser regression tests cover mode switching, autosaved content preservation, b
 - 100k+ HTML-character files use 120 ms and 500k+ use 300 ms, avoiding extra full-document serialization on every key.
 - Continuous typing gets a 1-second checkpoint; on blur, pagehide, or tab backgrounding the current draft is flushed.
 - Added local IndexedDB **Versions** history (up to 12 revisions, about 60 seconds apart) with manual snapshot and safe restore. It is not cloud backup.
+
+- Routine localStorage writes are throttled to at most roughly 3–4 per second (300 ms spacing), so fast typing does not create an expensive full-document save for every key. Immediate explicit/focus-loss saves bypass the routine throttle.
+- Deterministic timing tests verify the adaptive scheduler; full browser and packaged-Windows tests remain the release gates.

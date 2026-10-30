@@ -18,3 +18,6 @@ The browser's native Undo in focused text fields may behave differently from pro
 
 ## Recovery versions
 SUPRA Writer v0.7 adds up to 12 rolling IndexedDB recovery points, approximately one every 60 seconds of editing activity (and optional manual points). Open **Versions** and select a version to restore. Restoring first snapshots the existing draft so it can be recovered. These revisions are local to the current browser/device; clearing site storage removes them. This is distinct from undo and explicit file export.
+
+## Autosave write throttling (v0.7)
+The 50 ms small-document delay is the minimum time *after editing settles*, not a promise of durable storage within 50 ms on every keystroke. Routine whole-document localStorage writes are spaced at least 300 ms apart to reduce typing interruption. A focus-loss or visibility-change flush bypasses this spacing. Larger documents use 120/300 ms idle delays; event-loop, browser throttling, storage speed and quota also affect actual persistence. Autosave does not update exported DOCX files automatically.
