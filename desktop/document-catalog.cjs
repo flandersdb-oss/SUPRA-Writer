@@ -5,6 +5,7 @@ const path=require('node:path');
 const READABLE=new Set(['.docx','.html','.htm','.txt','.md','.markdown']);
 const OPTIONAL=new Set(['.odt','.fodt','.rtf','.doc','.docm','.pages','.wpd','.abw','.wps','.tex','.epub','.pdf','.sxw','.ott','.xml','.rst','.org','.asciidoc']);
 const MAX_ITEMS=5000,MAX_DEPTH=8,MAX_ROOTS=10,MAX_OPEN_BYTES=25*1024*1024;
+const SKIP_DIRS=new Set(['node_modules','appdata','program files','program files (x86)','programdata','system volume information','$recycle.bin','windows']);
 const PANDOC_FORMATS=new Set(['.tex','.epub','.rst','.org','.asciidoc']);
 const LIBREOFFICE_FORMATS=new Set(['.odt','.fodt','.rtf','.doc','.wpd','.abw','.wps','.sxw','.ott']);
 function adapterFor(extension){
@@ -31,7 +32,7 @@ async function scanRoots(paths,options={}){
    const {dir,depth}=stack.pop();let entries;
    try{entries=await fs.readdir(dir,{withFileTypes:true});}catch{skipped++;continue;}
    for(const e of entries){
-    if(e.name.startsWith('.')||e.isSymbolicLink())continue;
+    if(e.name.startsWith('.')||e.isSymbolicLink()||(e.isDirectory()&&SKIP_DIRS.has(e.name.toLowerCase())))continue;
     const full=path.join(dir,e.name);
     if(!inside(root,full))continue;
     if(e.isDirectory()){
