@@ -177,6 +177,16 @@ function wireIpc() {
    await fs.rm(catalogConfigPath(),{force:true});
    return {approved:false,items:[]};
   });
+  ipcMain.handle('catalog:adapter-source',async (event,id)=>{
+   targetWindow(event);
+   const sources={
+    libreoffice:'https://www.libreoffice.org/download/',
+    pandoc:'https://pandoc.org/installing.html'
+   };
+   if(typeof id!=='string'||!Object.prototype.hasOwnProperty.call(sources,id))throw Error('Unknown approved converter source');
+   await shell.openExternal(sources[id]);
+   return {opened:true,provider:id};
+  });
   ipcMain.handle('catalog:open',async (event,id)=>{
    targetWindow(event);
    if(typeof id!=='string'||!/^[1-9]\d{0,5}$/.test(id))throw Error('Invalid document identifier');
