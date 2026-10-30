@@ -146,7 +146,7 @@ function command(name,val){restoreSelection();document.execCommand(name,false,va
 const safeUrl=url=>{try{const u=new URL(url,location.href);return ['https:','http:','mailto:'].includes(u.protocol)?u.href:null;}catch{return null;}};
 const PAGE_BREAK_HTML='<div data-supra-page-break="true" contenteditable="false"></div>';
 const PAGE_BREAK_TOKEN='<!--SUPRA-PAGE-BREAK-TOKEN-->';
-const allowed=new Set(['P','DIV','H1','H2','H3','H4','BR','STRONG','B','EM','I','U','S','STRIKE','DEL','SPAN','FONT','UL','OL','LI','BLOCKQUOTE','TABLE','TBODY','THEAD','TR','TD','TH','A','SUP','SUB','HR']);
+const allowed=new Set(['P','DIV','H1','H2','H3','H4','BR','STRONG','B','EM','I','U','S','STRIKE','DEL','SPAN','FONT','UL','OL','LI','BLOCKQUOTE','PRE','CODE','TABLE','TBODY','THEAD','TR','TD','TH','A','SUP','SUB','HR']);
 const cssAllowed=new Set(['font-family','font-size','font-weight','font-style','text-decoration','text-decoration-line','color','background-color','text-align','line-height']);
 function sanitizeMarkup(html){const parsed=new DOMParser().parseFromString('<body>'+html+'</body>','text/html');
  function walk(parent){for(const node of [...parent.childNodes]){if(node.nodeType===8){node.remove();continue;}if(node.nodeType!==1)continue;
