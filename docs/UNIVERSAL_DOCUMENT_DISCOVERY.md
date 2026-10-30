@@ -37,7 +37,7 @@ The file type registry only proposes candidates. No external binary is bundled, 
 - Electron remains context-isolated, sandboxed, with Node integration disabled and explicit IPC sender validation.
 - Only the native folder chooser can grant scan scope. The stored allowlist is local to the user's app profile.
 - The scanner skips dot-hidden entries, symlinks and common system/application directories. It does not follow symlinked folders; opens are revalidated against the approved root.
-- Hard limits: **10 folders; 5,000 matching files; 8 folder levels; 25 MB opened document**. This is intentionally *not* indiscriminate drive crawling.
+- Hard limits: **10 folders; 5,000 matching files; 8 folder levels; 40,000 examined directory entries; 2,500 visited folders; approximately 12 seconds of scan processing; 25 MB opened document**. A slow individual filesystem call may extend the wall-clock timeout. This is intentionally *not* indiscriminate drive crawling.
 - The renderer receives temporary numeric item IDs and filenames, not absolute root paths or filesystem APIs.
 - Converter publisher links are fixed and only open from a deliberate user click. Only two official publisher URLs are whitelisted.
 - The scanner does not network-upload, execute macros, write to scanned files, install anything, or index document contents.
